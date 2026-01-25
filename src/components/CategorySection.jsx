@@ -6,23 +6,27 @@ const CategorySection = () => {
 
   const categories = [
     {
-      id: "pantry", // This ID matches the URL we want to go to
+      id: "pantry",
+      // 👇 CHANGE 1: Add the specific link destination here
+      link: "honey",
       title: "THE PANTRY",
       subtitle: "(For Eaters)",
       buttonText: "Shop Raw Honey & Goods",
       image: "/images/Pantry.jpg",
-      textColor: "text-gray-900", // Dark text for light background images
+      textColor: "text-gray-900",
     },
     {
       id: "apiary",
+      link: "equipment", // 👇 "Apiary" will now go to /shop/equipment
       title: "THE APIARY",
       subtitle: "(For Farmers)",
       buttonText: "Shop Equipment & Gear",
       image: "/images/Apiary.jpg",
-      textColor: "text-white", // Light text for dark background images
+      textColor: "text-white",
     },
     {
       id: "colony",
+      link: "bees", // 👇 "Colony" will now go to /shop/bees
       title: "THE COLONY",
       subtitle: "(Live Stock)",
       buttonText: "Buy Live Bees & Hives",
@@ -31,9 +35,9 @@ const CategorySection = () => {
     },
   ];
 
-  const handleCardClick = (categoryId) => {
-    // Navigate to the product page with the category ID
-    navigate(`/shop/${categoryId}`);
+  const handleCardClick = (categoryLink) => {
+    // 👇 CHANGE 2: Use the 'link' property instead of 'id'
+    navigate(`/shop/${categoryLink}`);
   };
 
   return (
@@ -42,7 +46,8 @@ const CategorySection = () => {
         {categories.map((cat) => (
           <div
             key={cat.id}
-            onClick={() => handleCardClick(cat.id)}
+            // 👇 Pass the specific link (honey/equipment/bees) here
+            onClick={() => handleCardClick(cat.link)}
             className="group cursor-pointer relative h-[500px] rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300"
           >
             {/* Background Image */}
@@ -52,7 +57,6 @@ const CategorySection = () => {
                 alt={cat.title}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
               />
-              {/* Overlay to ensure text readability */}
               <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors" />
             </div>
 

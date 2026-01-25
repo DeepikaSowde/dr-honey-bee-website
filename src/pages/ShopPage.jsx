@@ -1,146 +1,27 @@
-import React, { useState } from "react";
+// src/pages/ShopPage.jsx
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom"; // Added useNavigate
 import { Search, ShoppingCart } from "lucide-react";
 import { useCart } from "../context/CartContext";
+import { products } from "../data/products"; // 👇 Import data from the external file
 
 const ShopPage = () => {
   const { addToCart } = useCart();
-  const [activeTab, setActiveTab] = useState("all");
+  const navigate = useNavigate(); // 👇 Initialize hook
+  const { category } = useParams();
+
+  const [activeTab, setActiveTab] = useState(category || "all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // --- YOUR PRODUCT DATA ---
-  const products = [
-    // 1. HONEY
-    {
-      id: 1,
-      name: "Moringa Honey",
-      category: "honey",
-      price: "₹450",
-      img: "/images/pantry/Moringahoney.jpeg",
-      tag: "Best Seller",
-    },
-    {
-      id: 2,
-      name: "Sunflower Honey",
-      category: "honey",
-      price: "₹350",
-      img: "/images/pantry/Sunflowerhoney.jpeg",
-    },
-    {
-      id: 3,
-      name: "Multiflower Honey",
-      category: "honey",
-      price: "₹400",
-      img: "/images/pantry/Multiflowerhoney.jpeg",
-    },
-    {
-      id: 4,
-      name: "Leaf Honey",
-      category: "honey",
-      price: "₹600",
-      img: "/images/pantry/Leafhoney.jpeg",
-      tag: "Rare",
-    },
-    {
-      id: 5,
-      name: "Pure Bee Pollen",
-      category: "honey",
-      price: "₹800",
-      img: "/images/pantry/beepollen.jpeg",
-    },
-    {
-      id: 6,
-      name: "Organic Beeswax",
-      category: "honey",
-      price: "₹300",
-      img: "/images/pantry/Beewax.jpeg",
-    },
+  useEffect(() => {
+    if (category) {
+      setActiveTab(category);
+    } else {
+      setActiveTab("all");
+    }
+  }, [category]);
 
-    // 2. EQUIPMENT
-    {
-      id: 7,
-      name: "Honey Extractor",
-      category: "equipment",
-      price: "₹8,500",
-      img: "/images/apiary/Honey extractor.jpeg",
-    },
-    {
-      id: 8,
-      name: "Bee Smoker",
-      category: "equipment",
-      price: "₹650",
-      img: "/images/apiary/Bee smoker.jpeg",
-    },
-    {
-      id: 9,
-      name: "Uncapping Knife",
-      category: "equipment",
-      price: "₹450",
-      img: "/images/apiary/Bee Knife.jpeg",
-    },
-    {
-      id: 10,
-      name: "Protective Gloves",
-      category: "equipment",
-      price: "₹350",
-      img: "/images/apiary/Gloves.jpeg",
-    },
-    {
-      id: 11,
-      name: "Bee Veil (Mesh)",
-      category: "equipment",
-      price: "₹250",
-      img: "/images/apiary/Bee vail.jpeg",
-    },
-    {
-      id: 12,
-      name: "Full Bee Suit",
-      category: "equipment",
-      price: "₹1,800",
-      img: "/images/apiary/Full suite.jpeg",
-    },
-    {
-      id: 13,
-      name: "Half Jacket Suit",
-      category: "equipment",
-      price: "₹1,200",
-      img: "/images/apiary/Half suite.jpeg",
-    },
-    {
-      id: 14,
-      name: "Bee Hive Box",
-      category: "equipment",
-      price: "₹2,500",
-      img: "/images/colony/wooden-beehive.jpeg",
-      desc: "Standard Size",
-    },
-
-    // 3. LIVE BEES
-    {
-      id: 15,
-      name: "Italian Bee Colony",
-      category: "bees",
-      price: "₹3,500",
-      img: "/images/colony/Italian bee.jpg",
-      tag: "High Yield",
-    },
-    {
-      id: 16,
-      name: "Indian Bee Colony",
-      category: "bees",
-      price: "₹2,000",
-      img: "/images/colony/indianbees.jpg",
-    },
-    {
-      id: 17,
-      name: "Stingless Bee Colony",
-      category: "bees",
-      price: "₹1,500",
-      img: "/images/colony/stinglessbee.jpg",
-      tag: "Medicinal",
-    },
-  ];
-
-  // --- FILTER LOGIC (Category + Search) ---
+  // --- FILTER LOGIC ---
   const filteredProducts = products.filter((product) => {
     const matchesCategory =
       activeTab === "all" || product.category === activeTab;
@@ -152,7 +33,7 @@ const ShopPage = () => {
 
   return (
     <div className="bg-[#FDFCF8] min-h-screen font-sans">
-      {/* --- PAGE HEADER --- */}
+      {/* Header */}
       <div className="bg-[#FDF8E8] py-12 px-6 text-center border-b border-[#EAD2AC]/30">
         <h1 className="font-merriweather text-4xl font-black text-[#3E2F20] mb-2">
           Our Farm Shop
@@ -161,7 +42,7 @@ const ShopPage = () => {
           Fresh from the hive to your home
         </p>
 
-        {/* --- SEARCH BAR --- */}
+        {/* Search */}
         <div className="max-w-md mx-auto relative">
           <input
             type="text"
@@ -178,7 +59,7 @@ const ShopPage = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-10">
-        {/* --- CATEGORY TABS --- */}
+        {/* Tabs */}
         <div className="flex flex-wrap justify-center gap-3 mb-12">
           {["all", "honey", "equipment", "bees"].map((tab) => (
             <button
@@ -195,7 +76,7 @@ const ShopPage = () => {
           ))}
         </div>
 
-        {/* --- PRODUCT GRID --- */}
+        {/* Grid */}
         {filteredProducts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {filteredProducts.map((product) => (
@@ -203,8 +84,12 @@ const ShopPage = () => {
                 key={product.id}
                 className="group bg-white rounded-2xl p-3 shadow-sm hover:shadow-xl transition-all duration-300 border border-[#F0E6D2]"
               >
-                {/* Image */}
-                <div className="h-48 relative overflow-hidden rounded-xl bg-[#F9F5F0]">
+                {/* Image Container */}
+                <div
+                  className="h-48 relative overflow-hidden rounded-xl bg-[#F9F5F0] cursor-pointer"
+                  // 👇 CLICKING IMAGE GOES TO DETAILS PAGE
+                  onClick={() => navigate(`/product/${product.id}`)}
+                >
                   {product.tag && (
                     <span className="absolute top-2 left-2 bg-[#D98829] text-white text-[9px] font-bold px-2 py-1 rounded-full z-10 uppercase tracking-wide">
                       {product.tag}
@@ -221,7 +106,10 @@ const ShopPage = () => {
 
                   {/* Quick Add Button (Hover) */}
                   <button
-                    onClick={() => addToCart(product)}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevents clicking the image
+                      addToCart(product);
+                    }}
                     className="absolute bottom-3 right-3 bg-white text-[#3E2F20] p-2 rounded-full shadow-lg translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 hover:bg-[#3E2F20] hover:text-white"
                   >
                     <ShoppingCart size={16} />
@@ -230,7 +118,10 @@ const ShopPage = () => {
 
                 {/* Info */}
                 <div className="mt-4 text-center pb-2">
-                  <h3 className="font-merriweather font-bold text-[#3E2F20] text-sm md:text-base leading-tight">
+                  <h3
+                    className="font-merriweather font-bold text-[#3E2F20] text-sm md:text-base leading-tight cursor-pointer hover:text-[#D98829] transition-colors"
+                    onClick={() => navigate(`/product/${product.id}`)}
+                  >
                     {product.name}
                   </h3>
                   <div className="flex items-center justify-center gap-2 mt-2">
@@ -250,11 +141,8 @@ const ShopPage = () => {
             ))}
           </div>
         ) : (
-          // --- EMPTY STATE ---
           <div className="text-center py-20">
-            <p className="text-stone-400 italic">
-              No products found matching your search.
-            </p>
+            <p className="text-stone-400 italic">No products found.</p>
             <button
               onClick={() => {
                 setSearchQuery("");

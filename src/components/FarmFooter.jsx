@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import {
   Facebook,
   Instagram,
@@ -12,8 +13,7 @@ import {
 const FarmFooter = () => {
   return (
     <footer className="bg-[#2A2118] text-[#EAD2AC] relative pt-20 pb-10 overflow-hidden font-sans">
-      {/* 1. Newsletter Section (The Lead Magnet) */}
-      {/* Golden top border for separation */}
+      {/* 1. Newsletter Section */}
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-900 via-amber-500 to-amber-900"></div>
 
       <div className="max-w-7xl mx-auto px-6 mb-16 relative z-10">
@@ -47,12 +47,21 @@ const FarmFooter = () => {
         {/* Brand Column */}
         <div className="space-y-4">
           <h2 className="text-2xl font-serif font-black text-white tracking-widest">
-            DR. HONEY
+            DR. HONEY BEE FARM
           </h2>
           <p className="text-stone-500 text-sm leading-relaxed">
+            <span className="text-stone-300 font-bold">
+              Proprietor: A. Esak
+            </span>
+            <br />
             Ethically harvested, raw, and unfiltered honey from our family farm
-            to your table. Preserving nature's sweetness since 1995.
+            to your table.
           </p>
+
+          <div className="inline-block bg-[#1f1811] border border-[#5C4D3C] px-3 py-1 rounded text-xs text-stone-400 tracking-wider">
+            GSTIN: 33AAZPE3054F1ZR
+          </div>
+
           <div className="flex gap-4 pt-4">
             {[Facebook, Instagram, Twitter].map((Icon, i) => (
               <a
@@ -72,41 +81,97 @@ const FarmFooter = () => {
             Shop
           </h4>
           <ul className="space-y-3 text-stone-400 text-sm">
-            {[
-              "Raw Honey",
-              "Manuka Medicinal",
-              "Beeswax Candles",
-              "Gift Sets",
-              "Wholesale",
-            ].map((item) => (
-              <li key={item}>
-                <a href="#" className="hover:text-amber-500 transition-colors">
-                  {item}
-                </a>
-              </li>
-            ))}
+            <li>
+              <Link
+                to="/shop/honey"
+                className="hover:text-amber-500 transition-colors"
+              >
+                Raw Honey
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/shop/equipment"
+                className="hover:text-amber-500 transition-colors"
+              >
+                Beekeeping Equipment
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/shop/bees"
+                className="hover:text-amber-500 transition-colors"
+              >
+                Live Bee Colonies
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/shop/honey"
+                className="hover:text-amber-500 transition-colors"
+              >
+                Gift Sets
+              </Link>
+            </li>
           </ul>
         </div>
 
-        {/* Support */}
+        {/* Support & Legal (UPDATED FOR RAZORPAY) */}
         <div>
           <h4 className="text-white font-bold uppercase tracking-widest mb-6 text-sm">
             Support
           </h4>
           <ul className="space-y-3 text-stone-400 text-sm">
-            {[
-              "Track Order",
-              "Shipping Policy",
-              "Refunds",
-              "FAQ",
-              "Contact Us",
-            ].map((item) => (
-              <li key={item}>
-                <a href="#" className="hover:text-amber-500 transition-colors">
-                  {item}
-                </a>
-              </li>
-            ))}
+            <li>
+              <Link
+                to="/contact"
+                className="hover:text-amber-500 transition-colors"
+              >
+                Contact Us
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/about"
+                className="hover:text-amber-500 transition-colors"
+              >
+                About the Farm
+              </Link>
+            </li>
+
+            {/* 👇 THESE LINKS ARE REQUIRED FOR APPROVAL */}
+            <li>
+              <Link
+                to="/shipping-policy"
+                className="hover:text-amber-500 transition-colors"
+              >
+                Shipping Policy
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/refund-policy"
+                className="hover:text-amber-500 transition-colors"
+              >
+                Returns & Refunds
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/privacy-policy"
+                className="hover:text-amber-500 transition-colors"
+              >
+                Privacy Policy
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/terms-conditions"
+                className="hover:text-amber-500 transition-colors"
+              >
+                Terms & Conditions
+              </Link>
+            </li>
           </ul>
         </div>
 
@@ -119,18 +184,30 @@ const FarmFooter = () => {
             <li className="flex gap-3 items-start">
               <MapPin className="text-amber-600 shrink-0" size={20} />
               <span>
-                123 Honeycomb Lane,
+                115A, Ottar Street, Ayakudi,
                 <br />
-                Green Valley, CA 90210
+                Palani, Dindigul (Tamilnadu)
+                <br />
+                Pin: 624 613
               </span>
             </li>
             <li className="flex gap-3 items-center">
               <Phone className="text-amber-600 shrink-0" size={20} />
-              <span>+1 (555) 123-4567</span>
+              <a
+                href="tel:+919994087710"
+                className="hover:text-amber-500 transition-colors"
+              >
+                +91 99940 87710
+              </a>
             </li>
             <li className="flex gap-3 items-center">
               <Mail className="text-amber-600 shrink-0" size={20} />
-              <span>hello@drhoney.com</span>
+              <a
+                href="mailto:esakreemas@gmail.com"
+                className="hover:text-amber-500 transition-colors"
+              >
+                esakreemas@gmail.com
+              </a>
             </li>
           </ul>
         </div>
@@ -138,7 +215,10 @@ const FarmFooter = () => {
 
       {/* 3. Copyright */}
       <div className="max-w-7xl mx-auto px-6 pt-8 text-center text-stone-600 text-xs">
-        <p>&copy; 2026 Dr. Honey Bee Farm. All rights reserved.</p>
+        <p>
+          &copy; {new Date().getFullYear()} DR. Honey Bee Farm. All rights
+          reserved.
+        </p>
       </div>
     </footer>
   );

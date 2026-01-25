@@ -1,37 +1,43 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-// --- 1. IMPORT THE CONTEXT PROVIDER (CRITICAL!) ---
+// --- 1. IMPORT THE CONTEXT PROVIDER ---
 import { CartProvider } from "./context/CartContext";
 
-// --- 2. IMPORT NAVBAR ---
+// --- 2. IMPORT NAVBAR & FOOTER ---
 import Navbar from "./components/Navbar";
+import FarmFooter from "./components/FarmFooter"; // Moved here so we can use it globally
 
 // --- 3. IMPORT COMPONENTS ---
-// Note: Check your file paths! If these are in a 'components' folder,
-// change "./FarmMapHero" to "./components/FarmMapHero"
 import FarmMapHero from "./components/FarmMapHero";
 import CategorySection from "./components/CategorySection";
 import PuritySection from "./components/PuritySection";
 import Testimonials from "./components/Testimonials";
-import FarmFooter from "./components/FarmFooter";
 import TrainingGallery from "./components/TrainingGallery";
 import TrainingSection from "./components/TrainingSection";
 import BestSellers from "./components/BestSellers";
 
 // --- 4. IMPORT PAGES ---
-import ProductShowcase from "./pages/ProductShowcase"; // The "Shop All" page
-import ProductListPage from "./pages/ProductListPage"; // The "Category" page
+import ProductShowcase from "./pages/ProductShowcase";
 import CartPage from "./pages/CartPage";
 import ContactPage from "./pages/ContactPage";
 import ShopPage from "./pages/ShopPage";
 import AboutPage from "./pages/AboutPage";
+// Make sure this points to your PAGE component, not the data file
+import ProductDetails from "./data/ProductDetails";
+
+// --- 5. NEW: IMPORT RAZORPAY POLICY PAGES ---
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import RefundPolicy from "./pages/RefundPolicy";
+import Terms from "./pages/Terms";
+import ShippingPolicy from "./pages/ShippingPolicy";
+import ScrollToTop from "./pages/ScrollToTop";
 function App() {
   return (
-    // STEP 1: Wrap everything in CartProvider so the cart works everywhere
     <CartProvider>
       <BrowserRouter>
-        {/* STEP 2: Add Navbar here so it shows on EVERY page */}
+        <ScrollToTop />
+        {/* NAVBAR: Shows on every page */}
         <Navbar />
 
         <Routes>
@@ -43,31 +49,35 @@ function App() {
                 <FarmMapHero />
                 <CategorySection />
                 <BestSellers />
-
-                {/* Note: We usually DON'T put ProductShowcase on Home 
-                    if we have a dedicated /products route. 
-                    But if you want a preview, keep it. 
-                    Otherwise, remove <ProductShowcase /> from here. */}
-
                 <PuritySection />
                 <TrainingSection />
                 <TrainingGallery />
                 <Testimonials />
-                <FarmFooter />
+                {/* Footer is now global, so removed from here */}
               </>
             }
           />
 
-          {/* ================= DYNAMIC SHOP PAGE ================= */}
+          {/* ================= SHOPPING PAGES ================= */}
+          <Route path="/product/:id" element={<ProductDetails />} />
+          <Route path="/shop/:category" element={<ShopPage />} />
           <Route path="/shop" element={<ShopPage />} />
-          {/* ================= ALL PRODUCTS PAGE ================= */}
           <Route path="/products" element={<ProductShowcase />} />
-
-          {/* ================= CART PAGE ================= */}
           <Route path="/cart" element={<CartPage />} />
+
+          {/* ================= INFO PAGES ================= */}
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/about" element={<AboutPage />} />
+
+          {/* ================= NEW: LEGAL PAGES (Required for Razorpay) ================= */}
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/refund-policy" element={<RefundPolicy />} />
+          <Route path="/terms-conditions" element={<Terms />} />
+          <Route path="/shipping-policy" element={<ShippingPolicy />} />
         </Routes>
+
+        {/* FOOTER: Now shows on every page (Home, Shop, Policies, etc.) */}
+        <FarmFooter />
       </BrowserRouter>
     </CartProvider>
   );

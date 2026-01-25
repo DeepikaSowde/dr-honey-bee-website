@@ -10,8 +10,8 @@ const ContactPage = () => {
           Visit Our Hive
         </h1>
         <p className="font-montserrat text-sm md:text-base max-w-xl mx-auto tracking-wide opacity-90 leading-relaxed">
-          We love visitors! Come taste fresh honey, walk through the sunflower
-          fields, or just say hello to the bees.
+          We love visitors! Come check out our apiary, buy fresh honey, or
+          consult with us about beekeeping.
         </p>
       </div>
 
@@ -21,9 +21,12 @@ const ContactPage = () => {
           <div className="bg-[#FDF8E8] p-10 md:p-14 flex flex-col justify-between">
             {/* Contact Details */}
             <div>
-              <h2 className="font-merriweather text-2xl font-bold text-[#3E2F20] mb-8">
-                Farm Address
+              <h2 className="font-merriweather text-2xl font-bold text-[#3E2F20] mb-2">
+                Get in Touch
               </h2>
+              <p className="text-stone-500 text-sm mb-8 font-bold">
+                Proprietor: A. Esak
+              </p>
 
               <div className="space-y-8">
                 {/* Address */}
@@ -33,14 +36,12 @@ const ContactPage = () => {
                   </div>
                   <div>
                     <h3 className="font-bold text-[#3E2F20] text-sm uppercase tracking-wider mb-1">
-                      Location
+                      Farm Address
                     </h3>
                     <p className="text-stone-600 leading-relaxed text-sm">
-                      Dr. Honey Bee Farm,
+                      115A, Ottar Street, Ayakudi,
                       <br />
-                      12/4, Pollachi Main Road,
-                      <br />
-                      Coimbatore, Tamil Nadu - 641001
+                      Palani, Dindigul (Tamilnadu) - 624 613
                     </p>
                   </div>
                 </div>
@@ -54,11 +55,14 @@ const ContactPage = () => {
                     <h3 className="font-bold text-[#3E2F20] text-sm uppercase tracking-wider mb-1">
                       Call Us
                     </h3>
-                    <p className="text-stone-600 font-bold text-lg">
-                      +91 98765 43210
-                    </p>
+                    <a
+                      href="tel:+919994087710"
+                      className="text-stone-600 font-bold text-lg hover:text-amber-600 transition-colors"
+                    >
+                      +91 99940 87710
+                    </a>
                     <p className="text-stone-500 text-xs mt-1">
-                      Mon-Sat, 9am to 6pm
+                      Available for orders & consultation
                     </p>
                   </div>
                 </div>
@@ -72,33 +76,22 @@ const ContactPage = () => {
                     <h3 className="font-bold text-[#3E2F20] text-sm uppercase tracking-wider mb-1">
                       Email
                     </h3>
-                    <p className="text-stone-600 text-sm">
-                      hello@drhoneyfarm.com
-                    </p>
+                    <a
+                      href="mailto:esakreemas@gmail.com"
+                      className="text-stone-600 text-sm hover:text-amber-600 transition-colors"
+                    >
+                      esakreemas@gmail.com
+                    </a>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Social Links */}
+            {/* GSTIN Badge */}
             <div className="mt-12 pt-8 border-t border-[#3E2F20]/10">
-              <h3 className="font-bold text-[#3E2F20] text-xs uppercase tracking-wider mb-4">
-                Follow our Journey
-              </h3>
-              <div className="flex gap-4">
-                <a
-                  href="#"
-                  className="w-10 h-10 bg-[#3E2F20] text-white rounded-full flex items-center justify-center hover:bg-amber-600 transition-colors"
-                >
-                  <Instagram size={20} />
-                </a>
-                <a
-                  href="#"
-                  className="w-10 h-10 bg-[#3E2F20] text-white rounded-full flex items-center justify-center hover:bg-amber-600 transition-colors"
-                >
-                  <Facebook size={20} />
-                </a>
-              </div>
+              <p className="text-xs font-bold text-[#3E2F20]/50 uppercase tracking-widest">
+                GSTIN: 33AAZPE3054F1ZR
+              </p>
             </div>
           </div>
 
@@ -108,7 +101,7 @@ const ContactPage = () => {
               Send us a Message
             </h2>
             <p className="text-stone-500 text-sm mb-8">
-              Interested in bulk orders, workshops, or just have a question?
+              Interested in bulk orders, live bees, or beekeeping equipment?
             </p>
 
             <form className="space-y-5">
@@ -119,8 +112,8 @@ const ContactPage = () => {
                   </label>
                   <input
                     type="text"
-                    className="w-full bg-stone-50 border border-stone-200 p-3 rounded-lg focus:outline-none focus:border-amber-500 focus:bg-white transition-all text-sm"
-                    placeholder="John Doe"
+                    className="w-full bg-stone-50 border border-stone-200 p-3 rounded-lg focus:outline-none focus:border-amber-500 text-sm"
+                    placeholder="Your Name"
                   />
                 </div>
                 <div className="space-y-2">
@@ -129,7 +122,7 @@ const ContactPage = () => {
                   </label>
                   <input
                     type="tel"
-                    className="w-full bg-stone-50 border border-stone-200 p-3 rounded-lg focus:outline-none focus:border-amber-500 focus:bg-white transition-all text-sm"
+                    className="w-full bg-stone-50 border border-stone-200 p-3 rounded-lg focus:outline-none focus:border-amber-500 text-sm"
                     placeholder="+91..."
                   />
                 </div>
@@ -141,8 +134,8 @@ const ContactPage = () => {
                 </label>
                 <input
                   type="email"
-                  className="w-full bg-stone-50 border border-stone-200 p-3 rounded-lg focus:outline-none focus:border-amber-500 focus:bg-white transition-all text-sm"
-                  placeholder="john@example.com"
+                  className="w-full bg-stone-50 border border-stone-200 p-3 rounded-lg focus:outline-none focus:border-amber-500 text-sm"
+                  placeholder="you@example.com"
                 />
               </div>
 
@@ -152,22 +145,22 @@ const ContactPage = () => {
                 </label>
                 <textarea
                   rows="4"
-                  className="w-full bg-stone-50 border border-stone-200 p-3 rounded-lg focus:outline-none focus:border-amber-500 focus:bg-white transition-all text-sm"
-                  placeholder="I'm interested in..."
-                />
+                  className="w-full bg-stone-50 border border-stone-200 p-3 rounded-lg focus:outline-none focus:border-amber-500 text-sm"
+                  placeholder="I am looking for..."
+                ></textarea>
               </div>
 
-              <button className="w-full bg-[#D98829] text-white font-bold py-4 rounded-xl uppercase tracking-widest hover:bg-[#B6701E] transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-xs">
+              <button className="w-full bg-[#D98829] text-white font-bold py-4 rounded-xl uppercase tracking-widest hover:bg-[#B6701E] transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl text-xs">
                 Send Message <Send size={16} />
               </button>
             </form>
           </div>
         </div>
 
-        {/* --- GOOGLE MAP EMBED --- */}
+        {/* --- GOOGLE MAP EMBED (Updated to Ayakudi, Palani) --- */}
         <div className="mt-12 rounded-3xl overflow-hidden shadow-md border-4 border-white h-80 grayscale hover:grayscale-0 transition-all duration-700">
           <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d62657.44318724128!2d76.91979965000001!3d11.0168445!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba859af2f971cb5%3A0x2fc1c81e183ed282!2sCoimbatore%2C%20Tamil%20Nadu!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
+            src="https://maps.google.com/maps?q=Ayakudi,%20Palani,%20Tamil%20Nadu&t=&z=13&ie=UTF8&iwloc=&output=embed"
             width="100%"
             height="100%"
             style={{ border: 0 }}

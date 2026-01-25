@@ -85,7 +85,7 @@ const AboutPage = () => {
                 Dr
               </div>
               <div>
-                <p className="font-bold text-[#3E2F20]">Dr. Saravanan</p>
+                <p className="font-bold text-[#3E2F20]"> A. Esak</p>
                 <p className="text-xs text-[#D98829] uppercase tracking-wider">
                   Founder & Chief Apiarist
                 </p>
