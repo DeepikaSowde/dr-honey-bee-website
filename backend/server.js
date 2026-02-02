@@ -1,8 +1,9 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-require("dotenv").config();
+import express from "express";
+import mongoose from "mongoose";
+import cors from "cors";
+import dotenv from "dotenv";
 
+dotenv.config(); // Initialize dotenv
 const app = express();
 
 // --- 1. MIDDLEWARE ---
