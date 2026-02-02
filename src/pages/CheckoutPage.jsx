@@ -1,11 +1,13 @@
 import React, { useState } from "react";
-import { useCart } from "../context/CartContext"; // 1. Access your cart data
+import { useCart } from "../context/CartContext";
+import { useNavigate } from "react-router-dom";
 
 const CheckoutPage = () => {
-  const { cartItems, clearCart } = useCart(); // 2. Destructure needed context
+  const { cartItems, clearCart } = useCart();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  // 3. State for Shipping Form
+  // Form State to capture customer info
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -19,7 +21,7 @@ const CheckoutPage = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // 4. Calculate real totals
+  // Real-time calculations
   const subtotal = cartItems.reduce((acc, item) => {
     const price = parseFloat(item.price.toString().replace(/[^\d.]/g, ""));
     return acc + price * item.quantity;
@@ -28,14 +30,14 @@ const CheckoutPage = () => {
   const shipping = subtotal > 1000 ? 0 : 50;
   const total = subtotal + shipping;
 
-  // 5. Submit to Backend
   const handleConfirm = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      // Connects to your LIVE Render backend URL
       const response = await fetch(
-        "https://your-backend-url.onrender.com/api/orders",
+        "https://dr-honey-bee-website.onrender.com/api/orders",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -52,11 +54,11 @@ const CheckoutPage = () => {
       if (data.success) {
         alert("Order Placed Successfully! Order ID: " + data.orderId);
         clearCart();
-        // Redirect to a success page or home
+        navigate("/"); // Redirect to Home
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Something went wrong. Please try again.");
+      alert("Checkout error. Please check your internet or try again.");
     } finally {
       setLoading(false);
     }
@@ -96,7 +98,6 @@ const CheckoutPage = () => {
           >
             <input
               name="name"
-              type="text"
               placeholder="Full Name"
               style={inputStyle}
               onChange={handleChange}
@@ -105,22 +106,21 @@ const CheckoutPage = () => {
             <input
               name="email"
               type="email"
-              placeholder="Email Address"
+              placeholder="Email"
               style={inputStyle}
               onChange={handleChange}
               required
             />
             <input
               name="phone"
-              type="text"
-              placeholder="Phone Number"
+              placeholder="Phone"
               style={inputStyle}
               onChange={handleChange}
               required
             />
             <textarea
               name="address"
-              placeholder="Complete Address"
+              placeholder="Address"
               style={{ ...inputStyle, height: "100px" }}
               onChange={handleChange}
               required
@@ -134,7 +134,6 @@ const CheckoutPage = () => {
             >
               <input
                 name="city"
-                type="text"
                 placeholder="City"
                 style={inputStyle}
                 onChange={handleChange}
@@ -142,14 +141,12 @@ const CheckoutPage = () => {
               />
               <input
                 name="pincode"
-                type="text"
                 placeholder="Pincode"
                 style={inputStyle}
                 onChange={handleChange}
                 required
               />
             </div>
-            {/* Submit button hidden in form to trigger on enter, real button is in aside */}
             <button
               id="hidden-submit"
               type="submit"
@@ -169,7 +166,6 @@ const CheckoutPage = () => {
           >
             Your Order
           </h3>
-
           <div style={{ margin: "20px 0" }}>
             {cartItems.map((item) => (
               <div key={item.id} style={summaryItemStyle}>
@@ -192,12 +188,10 @@ const CheckoutPage = () => {
               </span>
             </div>
           </div>
-
           <div style={totalStyle}>
             <span>Total</span>
             <span>₹{total.toLocaleString()}</span>
           </div>
-
           <button
             disabled={loading || cartItems.length === 0}
             onClick={() => document.getElementById("hidden-submit").click()}
@@ -205,14 +199,12 @@ const CheckoutPage = () => {
           >
             {loading ? "PROCESSING..." : "CONFIRM & PAY NOW"}
           </button>
-          <p style={secureTextStyle}>🔒 Secure 256-bit SSL Encrypted Payment</p>
         </aside>
       </div>
     </div>
   );
 };
 
-// Styles
 const containerStyle = {
   backgroundColor: "white",
   padding: "30px",
@@ -251,12 +243,6 @@ const btnStyle = {
   borderRadius: "6px",
   fontWeight: "bold",
   cursor: "pointer",
-};
-const secureTextStyle = {
-  textAlign: "center",
-  fontSize: "0.8rem",
-  color: "#888",
-  marginTop: "10px",
 };
 
 export default CheckoutPage;
