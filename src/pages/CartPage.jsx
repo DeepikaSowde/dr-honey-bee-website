@@ -154,10 +154,8 @@ const CartPage = () => {
                 <span>₹{(FINAL_TOTAL || 0).toLocaleString()}</span>
               </div>
 
-              <a
-                href={`https://wa.me/919876543210?text=Hi! I want to order items worth ₹${FINAL_TOTAL || 0}`}
-                target="_blank"
-                rel="noreferrer"
+              <Link
+                to="/checkout"
                 className="w-full bg-[#3E2F20] text-[#EAD2AC] py-4 rounded-xl font-bold uppercase tracking-widest hover:bg-[#D98829] hover:text-white transition-all shadow-lg flex items-center justify-center gap-2 group"
               >
                 Checkout Now
@@ -165,7 +163,7 @@ const CartPage = () => {
                   size={18}
                   className="group-hover:translate-x-1 transition-transform"
                 />
-              </a>
+              </Link>
 
               <p className="text-center text-[10px] text-stone-400 mt-4 uppercase tracking-wide">
                 Secure Checkout • Fast Delivery

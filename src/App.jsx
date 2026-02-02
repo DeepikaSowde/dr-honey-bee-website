@@ -32,6 +32,7 @@ import RefundPolicy from "./pages/RefundPolicy";
 import Terms from "./pages/Terms";
 import ShippingPolicy from "./pages/ShippingPolicy";
 import ScrollToTop from "./pages/ScrollToTop";
+import CheckoutPage from "./pages/CheckoutPage";
 function App() {
   return (
     <CartProvider>
@@ -64,7 +65,7 @@ function App() {
           <Route path="/shop" element={<ShopPage />} />
           <Route path="/products" element={<ProductShowcase />} />
           <Route path="/cart" element={<CartPage />} />
-
+          <Route path="/checkout" element={<CheckoutPage />} />
           {/* ================= INFO PAGES ================= */}
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/about" element={<AboutPage />} />
