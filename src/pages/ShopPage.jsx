@@ -1,55 +1,79 @@
-// src/pages/ShopPage.jsx
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom"; // Added useNavigate
+import { useParams, useNavigate } from "react-router-dom";
 import { Search, ShoppingCart } from "lucide-react";
 import { useCart } from "../context/CartContext";
-import { products } from "../data/products"; // 👇 Import data from the external file
 
 const ShopPage = () => {
   const { addToCart } = useCart();
-  const navigate = useNavigate(); // 👇 Initialize hook
+  const navigate = useNavigate();
   const { category } = useParams();
 
+  // --- LIVE DATA STATES ---
+  const [dbProducts, setDbProducts] = useState([]); // Dynamic products from MongoDB
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(category || "all");
   const [searchQuery, setSearchQuery] = useState("");
 
+  // 1. Fetch live products from your Render backend
   useEffect(() => {
-    if (category) {
-      setActiveTab(category);
-    } else {
-      setActiveTab("all");
-    }
+    const fetchLiveProducts = async () => {
+      try {
+        const res = await fetch(
+          "https://dr-honey-bee-website.onrender.com/api/products",
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setDbProducts(data);
+        }
+      } catch (err) {
+        console.error("Error fetching from database:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchLiveProducts();
+  }, []);
+
+  useEffect(() => {
+    setActiveTab(category || "all");
   }, [category]);
 
-  // --- FILTER LOGIC ---
-  const filteredProducts = products.filter((product) => {
+  // --- UPDATED FILTER LOGIC (Using dbProducts) ---
+  const filteredProducts = dbProducts.filter((product) => {
+    // Note: Database uses lowercase 'category' strings
     const matchesCategory =
-      activeTab === "all" || product.category === activeTab;
+      activeTab === "all" ||
+      product.category.toLowerCase() === activeTab.toLowerCase();
     const matchesSearch = product.name
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#FDFCF8]">
+        <p className="text-[#3E2F20] font-merriweather italic">
+          Gathering products from the hive...
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-[#FDFCF8] min-h-screen font-sans">
-      {/* Header */}
+      {/* Header & Search (Keep your existing JSX here) */}
       <div className="bg-[#FDF8E8] py-12 px-6 text-center border-b border-[#EAD2AC]/30">
         <h1 className="font-merriweather text-4xl font-black text-[#3E2F20] mb-2">
           Our Farm Shop
         </h1>
-        <p className="font-montserrat text-xs text-[#8C7A63] uppercase tracking-widest mb-8">
-          Fresh from the hive to your home
-        </p>
-
-        {/* Search */}
-        <div className="max-w-md mx-auto relative">
+        <div className="max-w-md mx-auto relative mt-8">
           <input
             type="text"
             placeholder="Search honey, equipment..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 rounded-full border border-[#EAD2AC] bg-white text-[#3E2F20] focus:outline-none focus:ring-2 focus:ring-[#D98829] transition-all shadow-sm"
+            className="w-full pl-12 pr-4 py-3 rounded-full border border-[#EAD2AC] bg-white text-[#3E2F20] focus:outline-none focus:ring-2 focus:ring-[#D98829] shadow-sm"
           />
           <Search
             className="absolute left-4 top-3.5 text-stone-400"
@@ -76,63 +100,47 @@ const ShopPage = () => {
           ))}
         </div>
 
-        {/* Grid */}
+        {/* Grid Using MongoDB IDs */}
         {filteredProducts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {filteredProducts.map((product) => (
               <div
-                key={product.id}
-                className="group bg-white rounded-2xl p-3 shadow-sm hover:shadow-xl transition-all duration-300 border border-[#F0E6D2]"
+                key={product._id}
+                className="group bg-white rounded-2xl p-3 shadow-sm hover:shadow-xl border border-[#F0E6D2]"
               >
-                {/* Image Container */}
                 <div
                   className="h-48 relative overflow-hidden rounded-xl bg-[#F9F5F0] cursor-pointer"
-                  // 👇 CLICKING IMAGE GOES TO DETAILS PAGE
-                  onClick={() => navigate(`/product/${product.id}`)}
+                  onClick={() => navigate(`/product/${product._id}`)}
                 >
-                  {product.tag && (
-                    <span className="absolute top-2 left-2 bg-[#D98829] text-white text-[9px] font-bold px-2 py-1 rounded-full z-10 uppercase tracking-wide">
-                      {product.tag}
-                    </span>
-                  )}
+                  {/* Image from Cloudinary */}
                   <img
-                    src={product.img}
+                    src={product.imageUrl}
                     alt={product.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 mix-blend-multiply"
-                    onError={(e) => {
-                      e.target.style.display = "none";
-                    }}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
-
-                  {/* Quick Add Button (Hover) */}
                   <button
                     onClick={(e) => {
-                      e.stopPropagation(); // Prevents clicking the image
+                      e.stopPropagation();
                       addToCart(product);
                     }}
-                    className="absolute bottom-3 right-3 bg-white text-[#3E2F20] p-2 rounded-full shadow-lg translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 hover:bg-[#3E2F20] hover:text-white"
+                    className="absolute bottom-3 right-3 bg-white text-[#3E2F20] p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-[#3E2F20] hover:text-white"
                   >
                     <ShoppingCart size={16} />
                   </button>
                 </div>
 
-                {/* Info */}
                 <div className="mt-4 text-center pb-2">
-                  <h3
-                    className="font-merriweather font-bold text-[#3E2F20] text-sm md:text-base leading-tight cursor-pointer hover:text-[#D98829] transition-colors"
-                    onClick={() => navigate(`/product/${product.id}`)}
-                  >
+                  <h3 className="font-merriweather font-bold text-[#3E2F20] text-sm md:text-base leading-tight">
                     {product.name}
                   </h3>
                   <div className="flex items-center justify-center gap-2 mt-2">
                     <span className="font-montserrat text-[#D98829] font-bold text-sm">
-                      {product.price}
+                      ₹{product.price}
                     </span>
                   </div>
-
                   <button
                     onClick={() => addToCart(product)}
-                    className="mt-3 w-full py-2 border border-[#3E2F20] rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-[#3E2F20] hover:text-white transition-colors"
+                    className="mt-3 w-full py-2 border border-[#3E2F20] rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-[#3E2F20] hover:text-white"
                   >
                     Add to Cart
                   </button>
@@ -142,16 +150,9 @@ const ShopPage = () => {
           </div>
         ) : (
           <div className="text-center py-20">
-            <p className="text-stone-400 italic">No products found.</p>
-            <button
-              onClick={() => {
-                setSearchQuery("");
-                setActiveTab("all");
-              }}
-              className="mt-4 text-[#D98829] font-bold hover:underline"
-            >
-              Clear Filters
-            </button>
+            <p className="text-stone-400 italic">
+              No products found in the hive.
+            </p>
           </div>
         )}
       </div>
