@@ -7,17 +7,27 @@ const AdminDashboard = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // 1. Function to fetch orders using the password in headers
+  // --- PRODUCT MANAGEMENT STATES ---
+  const [newProduct, setNewProduct] = useState({
+    name: "",
+    price: "",
+    stockQuantity: "",
+    category: "Honey",
+    description: "",
+  });
+  const [previewSource, setPreviewSource] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+
+  // 1. Authenticate and Fetch Orders
   const fetchOrders = async (adminPass) => {
     setLoading(true);
     try {
       const res = await fetch(
         "https://dr-honey-bee-website.onrender.com/api/admin/orders",
         {
-          headers: { "x-admin-key": adminPass }, // Sends password for server verification
+          headers: { "x-admin-key": adminPass },
         },
       );
-
       if (res.ok) {
         const data = await res.json();
         setOrders(data);
@@ -38,7 +48,67 @@ const AdminDashboard = () => {
     fetchOrders(password);
   };
 
-  // 2. Function to update order status to 'SHIPPED'
+  // --- IMAGE HANDLING ---
+  const handleFileInputChange = (e) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onloadend = () => setPreviewSource(reader.result);
+  };
+
+  // 2. Automated Product Upload (Cloudinary -> MongoDB)
+  const handleAddProduct = async (e) => {
+    e.preventDefault();
+    if (!previewSource) return alert("Please select a product photo!");
+    setIsUploading(true);
+
+    try {
+      // Step A: Upload Image to Cloudinary via Backend
+      const uploadRes = await fetch(
+        "https://dr-honey-bee-website.onrender.com/api/admin/upload",
+        {
+          method: "POST",
+          body: JSON.stringify({ data: previewSource }),
+          headers: {
+            "Content-Type": "application/json",
+            "x-admin-key": password,
+          },
+        },
+      );
+      const { url } = await uploadRes.json();
+
+      // Step B: Save Product Info + Cloudinary URL to MongoDB
+      const productRes = await fetch(
+        "https://dr-honey-bee-website.onrender.com/api/admin/products",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-admin-key": password,
+          },
+          body: JSON.stringify({ ...newProduct, imageUrl: url }),
+        },
+      );
+
+      if (productRes.ok) {
+        alert("Success! The product is now live on the website.");
+        setNewProduct({
+          name: "",
+          price: "",
+          stockQuantity: "",
+          category: "Honey",
+          description: "",
+        });
+        setPreviewSource("");
+      }
+    } catch (err) {
+      alert("Something went wrong during upload.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // 3. Update order status to 'SHIPPED'
   const updateStatus = async (id, newStatus) => {
     try {
       const res = await fetch(
@@ -61,7 +131,7 @@ const AdminDashboard = () => {
     }
   };
 
-  // 3. Login Screen (Shown if not authenticated)
+  // --- LOGIN SCREEN (Shown if not authenticated) ---
   if (!isAuthenticated) {
     return (
       <div style={loginContainer}>
@@ -86,7 +156,7 @@ const AdminDashboard = () => {
     );
   }
 
-  // 4. Main Dashboard Screen
+  // --- MAIN DASHBOARD SCREEN ---
   return (
     <div
       style={{
@@ -112,14 +182,111 @@ const AdminDashboard = () => {
         </button>
       </div>
 
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          backgroundColor: "white",
-          boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
-        }}
-      >
+      {/* PRODUCT UPLOAD SECTION */}
+      <section style={formSectionStyle}>
+        <h3 style={{ marginTop: 0, color: "#4a3728" }}>Upload New Item</h3>
+        <form
+          onSubmit={handleAddProduct}
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "15px",
+          }}
+        >
+          <input
+            placeholder="Product Name"
+            value={newProduct.name}
+            style={inputStyle}
+            onChange={(e) =>
+              setNewProduct({ ...newProduct, name: e.target.value })
+            }
+            required
+          />
+          <input
+            placeholder="Price (₹)"
+            type="number"
+            value={newProduct.price}
+            style={inputStyle}
+            onChange={(e) =>
+              setNewProduct({ ...newProduct, price: e.target.value })
+            }
+            required
+          />
+
+          <select
+            value={newProduct.category}
+            style={inputStyle}
+            onChange={(e) =>
+              setNewProduct({ ...newProduct, category: e.target.value })
+            }
+          >
+            <option value="Honey">Honey</option>
+            <option value="Equipment">Equipment</option>
+            <option value="Bees">Bees</option>
+          </select>
+
+          <input
+            placeholder="Stock Quantity"
+            type="number"
+            value={newProduct.stockQuantity}
+            style={inputStyle}
+            onChange={(e) =>
+              setNewProduct({ ...newProduct, stockQuantity: e.target.value })
+            }
+            required
+          />
+
+          <textarea
+            placeholder="Description"
+            value={newProduct.description}
+            style={{ ...inputStyle, gridColumn: "span 2" }}
+            onChange={(e) =>
+              setNewProduct({ ...newProduct, description: e.target.value })
+            }
+          />
+
+          <div style={{ gridColumn: "span 2" }}>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "5px",
+                fontSize: "0.9rem",
+              }}
+            >
+              Product Photo:
+            </label>
+            <input
+              type="file"
+              onChange={handleFileInputChange}
+              accept="image/*"
+            />
+            {previewSource && (
+              <img
+                src={previewSource}
+                alt="Preview"
+                style={{
+                  width: "80px",
+                  display: "block",
+                  marginTop: "10px",
+                  borderRadius: "4px",
+                }}
+              />
+            )}
+          </div>
+
+          <button
+            type="submit"
+            style={{ ...btnStyle, gridColumn: "span 2" }}
+            disabled={isUploading}
+          >
+            {isUploading ? "Uploading to Cloud..." : "Publish to Shop"}
+          </button>
+        </form>
+      </section>
+
+      {/* ORDERS TABLE */}
+      <h3 style={{ color: "#4a3728" }}>Customer Orders</h3>
+      <table style={tableStyle}>
         <thead>
           <tr style={{ backgroundColor: "#4a3728", color: "white" }}>
             <th style={tableHeader}>Date</th>
@@ -141,18 +308,11 @@ const AdminDashboard = () => {
                 <strong>{order.customer.name}</strong>
                 <br />
                 {order.customer.phone}
-                <br />
-                <span style={{ fontSize: "0.8rem", color: "#666" }}>
-                  {order.customer.email}
-                </span>
               </td>
-              <td style={tdStyle}>
-                {order.customer.address}, {order.customer.city} -{" "}
-                {order.customer.pincode}
-              </td>
+              <td style={tdStyle}>{order.customer.city}</td>
               <td style={tdStyle}>
                 {order.items.map((item, i) => (
-                  <div key={i} style={{ fontSize: "0.9rem" }}>
+                  <div key={i}>
                     • {item.name} (x{item.quantity})
                   </div>
                 ))}
@@ -204,15 +364,26 @@ const loginBox = {
 const inputStyle = {
   width: "100%",
   padding: "12px",
-  margin: "10px 0",
   borderRadius: "6px",
   border: "1px solid #ddd",
   boxSizing: "border-box",
 };
+const formSectionStyle = {
+  backgroundColor: "white",
+  padding: "25px",
+  borderRadius: "12px",
+  boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
+  marginBottom: "40px",
+};
+const tableStyle = {
+  width: "100%",
+  borderCollapse: "collapse",
+  backgroundColor: "white",
+  boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
+};
 const tableHeader = { padding: "15px", textAlign: "left" };
 const tdStyle = { padding: "15px", verticalAlign: "top" };
 const btnStyle = {
-  width: "100%",
   backgroundColor: "#4a3728",
   color: "white",
   border: "none",
