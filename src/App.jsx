@@ -33,6 +33,7 @@ import Terms from "./pages/Terms";
 import ShippingPolicy from "./pages/ShippingPolicy";
 import ScrollToTop from "./pages/ScrollToTop";
 import CheckoutPage from "./pages/CheckoutPage";
+import AdminDashboard from "./pages/AdminDashboard";
 function App() {
   return (
     <CartProvider>
@@ -69,7 +70,7 @@ function App() {
           {/* ================= INFO PAGES ================= */}
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/about" element={<AboutPage />} />
-
+          <Route path="/admin-login-secret" element={<AdminDashboard />} />
           {/* ================= NEW: LEGAL PAGES (Required for Razorpay) ================= */}
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/refund-policy" element={<RefundPolicy />} />
