@@ -26,7 +26,7 @@ const Navbar = () => {
               HOME
             </Link>
             <Link
-              to="/shop/honey"
+              to="/shop"
               className="font-montserrat text-sm font-bold text-[#3E2F20] hover:text-[#D98829] tracking-wider transition-colors"
             >
               SHOP
@@ -127,7 +127,7 @@ const Navbar = () => {
             HOME
           </Link>
           <Link
-            to="/shop/honey"
+            to="/shop"
             onClick={() => setIsMenuOpen(false)}
             className="font-montserrat font-bold text-[#5C4D3C] hover:text-amber-600"
           >

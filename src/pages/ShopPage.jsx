@@ -6,12 +6,12 @@ import { useCart } from "../context/CartContext";
 const ShopPage = () => {
   const { addToCart } = useCart();
   const navigate = useNavigate();
-  const { category } = useParams();
+  const { category } = useParams(); // Retrieves category from URL
 
   // --- LIVE DATA STATES ---
-  const [dbProducts, setDbProducts] = useState([]); // Dynamic products from MongoDB
+  const [dbProducts, setDbProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState(category || "all");
+  const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
 
   // 1. Fetch live products from your Render backend
@@ -34,19 +34,26 @@ const ShopPage = () => {
     fetchLiveProducts();
   }, []);
 
+  // 2. Sync activeTab with URL category change
+  // This ensures that clicking 'Shop' (no category) resets the view to 'all'
   useEffect(() => {
-    setActiveTab(category || "all");
+    if (!category) {
+      setActiveTab("all");
+    } else {
+      setActiveTab(category.toLowerCase());
+    }
   }, [category]);
 
-  // --- UPDATED FILTER LOGIC (Using dbProducts) ---
+  // --- FILTER LOGIC ---
   const filteredProducts = dbProducts.filter((product) => {
-    // Note: Database uses lowercase 'category' strings
+    // If activeTab is 'all', matchesCategory is always true
     const matchesCategory =
-      activeTab === "all" ||
-      product.category.toLowerCase() === activeTab.toLowerCase();
+      activeTab === "all" || product.category.toLowerCase() === activeTab;
+
     const matchesSearch = product.name
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
+
     return matchesCategory && matchesSearch;
   });
 
@@ -62,12 +69,17 @@ const ShopPage = () => {
 
   return (
     <div className="bg-[#FDFCF8] min-h-screen font-sans">
-      {/* Header & Search (Keep your existing JSX here) */}
+      {/* Header */}
       <div className="bg-[#FDF8E8] py-12 px-6 text-center border-b border-[#EAD2AC]/30">
         <h1 className="font-merriweather text-4xl font-black text-[#3E2F20] mb-2">
           Our Farm Shop
         </h1>
-        <div className="max-w-md mx-auto relative mt-8">
+        <p className="font-montserrat text-xs text-[#8C7A63] uppercase tracking-widest mb-8">
+          Fresh from the hive to your home
+        </p>
+
+        {/* Search Bar */}
+        <div className="max-w-md mx-auto relative">
           <input
             type="text"
             placeholder="Search honey, equipment..."
@@ -83,12 +95,15 @@ const ShopPage = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-10">
-        {/* Tabs */}
+        {/* Category Tabs */}
         <div className="flex flex-wrap justify-center gap-3 mb-12">
           {["all", "honey", "equipment", "bees"].map((tab) => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => {
+                // Clicking a tab updates the URL, which then updates activeTab via useEffect
+                navigate(tab === "all" ? "/shop" : `/shop/${tab}`);
+              }}
               className={`px-6 py-2 rounded-full font-bold text-xs uppercase tracking-wide transition-all ${
                 activeTab === tab
                   ? "bg-[#3E2F20] text-white shadow-md"
@@ -100,19 +115,18 @@ const ShopPage = () => {
           ))}
         </div>
 
-        {/* Grid Using MongoDB IDs */}
+        {/* Product Grid */}
         {filteredProducts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {filteredProducts.map((product) => (
               <div
                 key={product._id}
-                className="group bg-white rounded-2xl p-3 shadow-sm hover:shadow-xl border border-[#F0E6D2]"
+                className="group bg-white rounded-2xl p-3 shadow-sm hover:shadow-xl transition-all duration-300 border border-[#F0E6D2]"
               >
                 <div
                   className="h-48 relative overflow-hidden rounded-xl bg-[#F9F5F0] cursor-pointer"
                   onClick={() => navigate(`/product/${product._id}`)}
                 >
-                  {/* Image from Cloudinary */}
                   <img
                     src={product.imageUrl}
                     alt={product.name}
@@ -128,19 +142,19 @@ const ShopPage = () => {
                     <ShoppingCart size={16} />
                   </button>
                 </div>
-
                 <div className="mt-4 text-center pb-2">
-                  <h3 className="font-merriweather font-bold text-[#3E2F20] text-sm md:text-base leading-tight">
+                  <h3
+                    className="font-merriweather font-bold text-[#3E2F20] text-sm md:text-base leading-tight cursor-pointer hover:text-[#D98829]"
+                    onClick={() => navigate(`/product/${product._id}`)}
+                  >
                     {product.name}
                   </h3>
-                  <div className="flex items-center justify-center gap-2 mt-2">
-                    <span className="font-montserrat text-[#D98829] font-bold text-sm">
-                      ₹{product.price}
-                    </span>
-                  </div>
+                  <p className="font-montserrat text-[#D98829] font-bold text-sm mt-2">
+                    ₹{product.price}
+                  </p>
                   <button
                     onClick={() => addToCart(product)}
-                    className="mt-3 w-full py-2 border border-[#3E2F20] rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-[#3E2F20] hover:text-white"
+                    className="mt-3 w-full py-2 border border-[#3E2F20] rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-[#3E2F20] hover:text-white transition-colors"
                   >
                     Add to Cart
                   </button>
