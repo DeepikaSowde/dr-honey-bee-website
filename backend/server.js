@@ -9,7 +9,7 @@ const app = express();
 
 // --- 1. MIDDLEWARE ---
 app.use(cors());
-app.use(express.json({ limit: "10mb" })); // Limit for Base64 image uploads
+app.use(express.json({ limit: "10mb" }));
 
 // --- 2. CLOUDINARY CONFIGURATION ---
 cloudinary.config({
@@ -49,7 +49,8 @@ const Product = mongoose.model(
   new mongoose.Schema({
     name: { type: String, required: true },
     price: { type: Number, required: true },
-    stockQuantity: { type: Number, default: 0 }, // Tracks jar count
+    category: { type: String, required: true }, //
+    stockQuantity: { type: Number, default: 0 },
     description: String,
     imageUrl: String,
     inStock: { type: Boolean, default: true },
@@ -69,7 +70,7 @@ const adminAuth = (req, res, next) => {
 
 // --- 6. ADMIN ROUTES (Protected) ---
 
-// Image Upload to Cloudinary
+// Image Upload
 app.post("/api/admin/upload", adminAuth, async (req, res) => {
   try {
     const fileStr = req.body.data;
@@ -105,7 +106,9 @@ app.patch("/api/admin/orders/:id", adminAuth, async (req, res) => {
   }
 });
 
-// Product Management
+// PRODUCT MANAGEMENT: Create, Update, Delete
+
+// Create Product
 app.post("/api/admin/products", adminAuth, async (req, res) => {
   try {
     const newProduct = new Product(req.body);
@@ -116,6 +119,21 @@ app.post("/api/admin/products", adminAuth, async (req, res) => {
   }
 });
 
+// Update Product (For future price/stock changes)
+app.put("/api/admin/products/:id", adminAuth, async (req, res) => {
+  try {
+    const updatedProduct = await Product.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true },
+    );
+    res.json({ success: true, product: updatedProduct });
+  } catch (error) {
+    res.status(500).json({ message: "Update failed" });
+  }
+});
+
+// Delete Product
 app.delete("/api/admin/products/:id", adminAuth, async (req, res) => {
   try {
     await Product.findByIdAndDelete(req.params.id);
@@ -141,18 +159,16 @@ app.post("/api/orders", async (req, res) => {
   try {
     const { customer, items, totalAmount } = req.body;
 
-    // 1. Save the new order
     const newOrder = new Order({ customer, items, totalAmount });
     const savedOrder = await newOrder.save();
 
-    // 2. Loop through items and reduce stock in database
     const stockUpdates = items.map((item) => {
       return Product.findByIdAndUpdate(item._id, {
-        $inc: { stockQuantity: -item.quantity }, // Decrease stock by quantity purchased
+        $inc: { stockQuantity: -item.quantity },
       });
     });
 
-    await Promise.all(stockUpdates); // Execute all updates at once
+    await Promise.all(stockUpdates);
 
     res.status(201).json({
       success: true,

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 
 const AdminDashboard = () => {
   const [orders, setOrders] = useState([]);
+  const [inventory, setInventory] = useState([]);
   const [password, setPassword] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [error, setError] = useState("");
@@ -18,19 +19,25 @@ const AdminDashboard = () => {
   const [previewSource, setPreviewSource] = useState("");
   const [isUploading, setIsUploading] = useState(false);
 
-  // 1. Authenticate and Fetch Orders
-  const fetchOrders = async (adminPass) => {
+  // 1. Authenticate and Fetch All Data
+  const fetchData = async (adminPass) => {
     setLoading(true);
     try {
-      const res = await fetch(
+      const orderRes = await fetch(
         "https://dr-honey-bee-website.onrender.com/api/admin/orders",
         {
           headers: { "x-admin-key": adminPass },
         },
       );
-      if (res.ok) {
-        const data = await res.json();
-        setOrders(data);
+      const invRes = await fetch(
+        "https://dr-honey-bee-website.onrender.com/api/products",
+      );
+
+      if (orderRes.ok && invRes.ok) {
+        const orderData = await orderRes.json();
+        const invData = await invRes.json();
+        setOrders(orderData);
+        setInventory(invData);
         setIsAuthenticated(true);
         setError("");
       } else {
@@ -45,10 +52,52 @@ const AdminDashboard = () => {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    fetchOrders(password);
+    fetchData(password);
   };
 
-  // --- IMAGE HANDLING ---
+  // --- INVENTORY ACTIONS (Update Price/Stock/Delete) ---
+  const handleUpdateProduct = async (id, updatedFields) => {
+    try {
+      const res = await fetch(
+        `https://dr-honey-bee-website.onrender.com/api/admin/products/${id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "x-admin-key": password,
+          },
+          body: JSON.stringify(updatedFields),
+        },
+      );
+      if (res.ok) {
+        fetchData(password);
+      }
+    } catch (err) {
+      alert("Update failed.");
+    }
+  };
+
+  const handleDeleteProduct = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this product?"))
+      return;
+    try {
+      const res = await fetch(
+        `https://dr-honey-bee-website.onrender.com/api/admin/products/${id}`,
+        {
+          method: "DELETE",
+          headers: { "x-admin-key": password },
+        },
+      );
+      if (res.ok) {
+        alert("Product deleted.");
+        fetchData(password);
+      }
+    } catch (err) {
+      alert("Delete failed.");
+    }
+  };
+
+  // --- IMAGE & UPLOAD HANDLING ---
   const handleFileInputChange = (e) => {
     const file = e.target.files[0];
     const reader = new FileReader();
@@ -56,14 +105,12 @@ const AdminDashboard = () => {
     reader.onloadend = () => setPreviewSource(reader.result);
   };
 
-  // 2. Automated Product Upload (Cloudinary -> MongoDB)
   const handleAddProduct = async (e) => {
     e.preventDefault();
     if (!previewSource) return alert("Please select a product photo!");
     setIsUploading(true);
 
     try {
-      // Step A: Upload Image to Cloudinary via Backend
       const uploadRes = await fetch(
         "https://dr-honey-bee-website.onrender.com/api/admin/upload",
         {
@@ -77,7 +124,6 @@ const AdminDashboard = () => {
       );
       const { url } = await uploadRes.json();
 
-      // Step B: Save Product Info + Cloudinary URL to MongoDB
       const productRes = await fetch(
         "https://dr-honey-bee-website.onrender.com/api/admin/products",
         {
@@ -91,7 +137,7 @@ const AdminDashboard = () => {
       );
 
       if (productRes.ok) {
-        alert("Success! The product is now live on the website.");
+        alert("Product published successfully!");
         setNewProduct({
           name: "",
           price: "",
@@ -100,16 +146,16 @@ const AdminDashboard = () => {
           description: "",
         });
         setPreviewSource("");
+        fetchData(password);
       }
     } catch (err) {
-      alert("Something went wrong during upload.");
+      alert("Upload failed.");
     } finally {
       setIsUploading(false);
     }
   };
 
-  // 3. Update order status to 'SHIPPED'
-  const updateStatus = async (id, newStatus) => {
+  const updateOrderStatus = async (id, newStatus) => {
     try {
       const res = await fetch(
         `https://dr-honey-bee-website.onrender.com/api/admin/orders/${id}`,
@@ -122,16 +168,12 @@ const AdminDashboard = () => {
           body: JSON.stringify({ status: newStatus }),
         },
       );
-
-      if (res.ok) {
-        fetchOrders(password); // Refresh the list after update
-      }
+      if (res.ok) fetchData(password);
     } catch (err) {
-      alert("Failed to update order status.");
+      alert("Failed to update order.");
     }
   };
 
-  // --- LOGIN SCREEN (Shown if not authenticated) ---
   if (!isAuthenticated) {
     return (
       <div style={loginContainer}>
@@ -141,7 +183,7 @@ const AdminDashboard = () => {
           </h2>
           <input
             type="password"
-            placeholder="Enter Admin Password"
+            placeholder="Admin Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             style={inputStyle}
@@ -156,7 +198,6 @@ const AdminDashboard = () => {
     );
   }
 
-  // --- MAIN DASHBOARD SCREEN ---
   return (
     <div
       style={{
@@ -175,16 +216,16 @@ const AdminDashboard = () => {
         }}
       >
         <h1 style={{ color: "#4a3728", fontFamily: "serif" }}>
-          Honey Farm Admin Dashboard
+          Honey Farm Dashboard
         </h1>
         <button onClick={() => window.location.reload()} style={logoutBtn}>
           Logout
         </button>
       </div>
 
-      {/* PRODUCT UPLOAD SECTION */}
+      {/* 1. UPLOAD SECTION */}
       <section style={formSectionStyle}>
-        <h3 style={{ marginTop: 0, color: "#4a3728" }}>Upload New Item</h3>
+        <h3 style={{ marginTop: 0, color: "#4a3728" }}>Add New Product</h3>
         <form
           onSubmit={handleAddProduct}
           style={{
@@ -212,7 +253,6 @@ const AdminDashboard = () => {
             }
             required
           />
-
           <select
             value={newProduct.category}
             style={inputStyle}
@@ -224,9 +264,8 @@ const AdminDashboard = () => {
             <option value="Equipment">Equipment</option>
             <option value="Bees">Bees</option>
           </select>
-
           <input
-            placeholder="Stock Quantity"
+            placeholder="Stock Qty"
             type="number"
             value={newProduct.stockQuantity}
             style={inputStyle}
@@ -235,7 +274,6 @@ const AdminDashboard = () => {
             }
             required
           />
-
           <textarea
             placeholder="Description"
             value={newProduct.description}
@@ -244,17 +282,7 @@ const AdminDashboard = () => {
               setNewProduct({ ...newProduct, description: e.target.value })
             }
           />
-
           <div style={{ gridColumn: "span 2" }}>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "5px",
-                fontSize: "0.9rem",
-              }}
-            >
-              Product Photo:
-            </label>
             <input
               type="file"
               onChange={handleFileInputChange}
@@ -265,34 +293,93 @@ const AdminDashboard = () => {
                 src={previewSource}
                 alt="Preview"
                 style={{
-                  width: "80px",
-                  display: "block",
+                  width: "60px",
                   marginTop: "10px",
                   borderRadius: "4px",
                 }}
               />
             )}
           </div>
-
           <button
             type="submit"
             style={{ ...btnStyle, gridColumn: "span 2" }}
             disabled={isUploading}
           >
-            {isUploading ? "Uploading to Cloud..." : "Publish to Shop"}
+            {isUploading ? "Uploading..." : "Publish to Shop"}
           </button>
         </form>
       </section>
 
-      {/* ORDERS TABLE */}
+      {/* 2. INVENTORY MANAGEMENT */}
+      <section style={formSectionStyle}>
+        <h3 style={{ color: "#4a3728" }}>Manage Inventory</h3>
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr
+                style={{ borderBottom: "2px solid #4a3728", textAlign: "left" }}
+              >
+                <th style={tdStyle}>Product</th>
+                <th style={tdStyle}>Price (₹)</th>
+                <th style={tdStyle}>Stock</th>
+                <th style={tdStyle}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {inventory.map((item) => (
+                <tr key={item._id} style={{ borderBottom: "1px solid #eee" }}>
+                  <td style={tdStyle}>{item.name}</td>
+                  <td style={tdStyle}>
+                    <input
+                      type="number"
+                      defaultValue={item.price}
+                      style={{ width: "80px" }}
+                      onBlur={(e) =>
+                        handleUpdateProduct(item._id, { price: e.target.value })
+                      }
+                    />
+                  </td>
+                  <td style={tdStyle}>
+                    <input
+                      type="number"
+                      defaultValue={item.stockQuantity}
+                      style={{ width: "60px" }}
+                      onBlur={(e) =>
+                        handleUpdateProduct(item._id, {
+                          stockQuantity: e.target.value,
+                        })
+                      }
+                    />
+                  </td>
+                  <td style={tdStyle}>
+                    <button
+                      onClick={() => handleDeleteProduct(item._id)}
+                      style={{
+                        color: "red",
+                        cursor: "pointer",
+                        border: "none",
+                        background: "none",
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* 3. ORDERS TABLE */}
       <h3 style={{ color: "#4a3728" }}>Customer Orders</h3>
       <table style={tableStyle}>
         <thead>
           <tr style={{ backgroundColor: "#4a3728", color: "white" }}>
             <th style={tableHeader}>Date</th>
-            <th style={tableHeader}>Customer Details</th>
+            <th style={tableHeader}>Customer</th>
             <th style={tableHeader}>Shipping Address</th>
-            <th style={tableHeader}>Items Ordered</th>
+            <th style={tableHeader}>Items</th>
             <th style={tableHeader}>Total</th>
             <th style={tableHeader}>Status</th>
             <th style={tableHeader}>Action</th>
@@ -309,7 +396,10 @@ const AdminDashboard = () => {
                 <br />
                 {order.customer.phone}
               </td>
-              <td style={tdStyle}>{order.customer.city}</td>
+              <td style={tdStyle}>
+                {order.customer.address}, {order.customer.city} -{" "}
+                {order.customer.pincode}
+              </td>
               <td style={tdStyle}>
                 {order.items.map((item, i) => (
                   <div key={i}>
@@ -330,7 +420,7 @@ const AdminDashboard = () => {
               <td style={tdStyle}>
                 {order.status === "PENDING" && (
                   <button
-                    onClick={() => updateStatus(order._id, "SHIPPED")}
+                    onClick={() => updateOrderStatus(order._id, "SHIPPED")}
                     style={shipBtn}
                   >
                     Mark Shipped
@@ -379,10 +469,9 @@ const tableStyle = {
   width: "100%",
   borderCollapse: "collapse",
   backgroundColor: "white",
-  boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
 };
 const tableHeader = { padding: "15px", textAlign: "left" };
-const tdStyle = { padding: "15px", verticalAlign: "top" };
+const tdStyle = { padding: "12px", verticalAlign: "top" };
 const btnStyle = {
   backgroundColor: "#4a3728",
   color: "white",
@@ -399,7 +488,6 @@ const shipBtn = {
   padding: "8px 12px",
   borderRadius: "4px",
   cursor: "pointer",
-  fontSize: "0.8rem",
 };
 const logoutBtn = {
   backgroundColor: "#8d6e63",
