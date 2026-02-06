@@ -26,7 +26,7 @@ const Navbar = () => {
               HOME
             </Link>
             <Link
-              to="/shop"
+              to="/shop/honey"
               className="font-montserrat text-sm font-bold text-[#3E2F20] hover:text-[#D98829] tracking-wider transition-colors"
             >
               SHOP
