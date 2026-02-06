@@ -75,7 +75,7 @@ const CartPage = () => {
                 {/* Image */}
                 <div className="w-24 h-24 bg-[#F9F5F0] rounded-xl flex-shrink-0 overflow-hidden">
                   <img
-                    src={item.img}
+                    src={item.imageUrl}
                     alt={item.name}
                     className="w-full h-full object-cover mix-blend-multiply"
                   />
