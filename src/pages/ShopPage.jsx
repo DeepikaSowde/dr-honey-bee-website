@@ -6,7 +6,7 @@ import { useCart } from "../context/CartContext";
 const ShopPage = () => {
   const { addToCart } = useCart();
   const navigate = useNavigate();
-  const { category } = useParams(); // Retrieves category from URL
+  const { category } = useParams(); // Retrieves category from URL like "honey"
 
   // --- LIVE DATA STATES ---
   const [dbProducts, setDbProducts] = useState([]);
@@ -35,21 +35,29 @@ const ShopPage = () => {
   }, []);
 
   // 2. Sync activeTab with URL category change
-  // This ensures that clicking 'Shop' (no category) resets the view to 'all'
   useEffect(() => {
     if (!category) {
       setActiveTab("all");
     } else {
+      // Ensure we set the tab to lowercase to match our logic below
       setActiveTab(category.toLowerCase());
     }
   }, [category]);
 
-  // --- FILTER LOGIC ---
+  // --- FILTER LOGIC (UPDATED) ---
   const filteredProducts = dbProducts.filter((product) => {
-    // If activeTab is 'all', matchesCategory is always true
-    const matchesCategory =
-      activeTab === "all" || product.category.toLowerCase() === activeTab;
+    // 1. Get product category safely (convert to lowercase & remove spaces)
+    // This ensures "Honey" from DB matches "honey" from URL
+    const productCategory = product.category
+      ? product.category.toLowerCase().trim()
+      : "others";
 
+    // 2. Compare with active tab
+    // We check if the active tab is "all" OR if the product category matches
+    const matchesCategory =
+      activeTab === "all" || productCategory === activeTab;
+
+    // 3. Search Filter
     const matchesSearch = product.name
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
@@ -101,7 +109,7 @@ const ShopPage = () => {
             <button
               key={tab}
               onClick={() => {
-                // Clicking a tab updates the URL, which then updates activeTab via useEffect
+                // Clicking a tab updates the URL
                 navigate(tab === "all" ? "/shop" : `/shop/${tab}`);
               }}
               className={`px-6 py-2 rounded-full font-bold text-xs uppercase tracking-wide transition-all ${
@@ -110,7 +118,9 @@ const ShopPage = () => {
                   : "bg-white text-[#5C4D3C] border border-[#EAD2AC] hover:bg-[#FDF8E8]"
               }`}
             >
-              {tab === "all" ? "All Products" : tab}
+              {tab === "all"
+                ? "All Products"
+                : tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
           ))}
         </div>
