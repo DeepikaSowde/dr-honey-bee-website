@@ -12,7 +12,7 @@ const CategorySection = () => {
       title: "THE PANTRY",
       subtitle: "(For Eaters)",
       buttonText: "Shop Raw Honey & Goods",
-      image: "/images/Pantry.jpg",
+      image: "/images/Pantry.jpeg",
       textColor: "text-gray-900",
     },
     {
@@ -21,16 +21,16 @@ const CategorySection = () => {
       title: "THE APIARY",
       subtitle: "(For Farmers)",
       buttonText: "Shop Equipment & Gear",
-      image: "/images/Apiary.jpg",
+      image: "/images/Apiary.jpeg",
       textColor: "text-white",
     },
     {
       id: "colony",
       link: "bees", // 👇 "Colony" will now go to /shop/bees
-      title: "THE COLONY",
-      subtitle: "(Live Stock)",
-      buttonText: "Buy Live Bees & Hives",
-      image: "/images/Colony.jpg",
+      title: "COSMETICS",
+      subtitle: "(Soaps, Balms & More)",
+      buttonText: "Buy Now",
+      image: "/images/soap.png",
       textColor: "text-white",
     },
   ];
