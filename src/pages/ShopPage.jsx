@@ -24,6 +24,7 @@ const ShopPage = () => {
         if (res.ok) {
           const data = await res.json();
           setDbProducts(data);
+          console.log("🔥 API DATA RECEIVED:", data);
         }
       } catch (err) {
         console.error("Error fetching from database:", err);
