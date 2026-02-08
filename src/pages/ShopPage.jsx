@@ -48,7 +48,7 @@ const ShopPage = () => {
   // --- FILTER LOGIC (UPDATED) ---
   const filteredProducts = dbProducts.filter((product) => {
     // 1. Get product category safely (convert to lowercase & remove spaces)
-    // This ensures "Honey" from DB matches "honey" from URL
+    // This ensures "Soap" from DB matches "soap" from URL
     const productCategory = product.category
       ? product.category.toLowerCase().trim()
       : "others";
@@ -91,7 +91,7 @@ const ShopPage = () => {
         <div className="max-w-md mx-auto relative">
           <input
             type="text"
-            placeholder="Search honey, equipment..."
+            placeholder="Search honey, equipment, soap..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-12 pr-4 py-3 rounded-full border border-[#EAD2AC] bg-white text-[#3E2F20] focus:outline-none focus:ring-2 focus:ring-[#D98829] shadow-sm"
@@ -106,7 +106,8 @@ const ShopPage = () => {
       <div className="max-w-7xl mx-auto px-6 py-10">
         {/* Category Tabs */}
         <div className="flex flex-wrap justify-center gap-3 mb-12">
-          {["all", "honey", "equipment", "bees"].map((tab) => (
+          {/* UPDATED: Changed "bees" to "soap" in this list */}
+          {["all", "honey", "equipment", "soap"].map((tab) => (
             <button
               key={tab}
               onClick={() => {
