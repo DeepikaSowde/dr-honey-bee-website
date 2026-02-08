@@ -6,27 +6,25 @@ import { useCart } from "../context/CartContext";
 const CartPage = () => {
   const { cartItems, removeFromCart, updateQuantity } = useCart();
 
-  // --- 1. BULLETPROOF PARSER ---
-  // Converts "₹1,200", "₹ 400", "400", or undefined -> Number
+  // --- 1. ROBUST PRICE PARSER ---
+  // Handles numbers (1000), strings ("1000"), and formatted strings ("₹1,000")
   const parsePrice = (price) => {
-    if (!price) return 0; // Guard against undefined/null
-    if (typeof price === "number") return price; // Already a number? Good.
+    if (price === null || price === undefined) return 0;
 
-    // 1. Convert to string
-    let cleanString = price.toString();
+    // If it's already a number, just return it
+    if (typeof price === "number") return price;
 
-    // 2. Remove EVERYTHING that is not a number or a decimal point
-    cleanString = cleanString.replace(/[^\d.]/g, "");
-
-    // 3. Parse it. If it fails (NaN), return 0.
+    // If it's a string, clean it up
+    const cleanString = price.toString().replace(/[^\d.]/g, "");
     const number = parseFloat(cleanString);
+
     return isNaN(number) ? 0 : number;
   };
 
-  // --- 2. SAFER CALCULATION ---
+  // --- 2. CALCULATE SUBTOTAL ---
   const subtotal = cartItems.reduce((acc, item) => {
     const itemPrice = parsePrice(item.price);
-    const itemQty = item.quantity || 1; // Default to 1 if quantity is missing
+    const itemQty = item.quantity || 1;
     return acc + itemPrice * itemQty;
   }, 0);
 
@@ -69,15 +67,19 @@ const CartPage = () => {
           <div className="lg:w-2/3 space-y-6">
             {cartItems.map((item) => (
               <div
-                key={item.id}
-                className="flex flex-col sm:flex-row items-center gap-6 bg-white p-4 rounded-2xl shadow-sm border border-[#EAD2AC]/30"
+                key={item._id || item.id} // Fallback to id if _id is missing
+                className="flex flex-col sm:flex-row items-center gap-6 bg-white p-4 rounded-2xl shadow-sm border border-[#EAD2AC]/30 relative"
               >
                 {/* Image */}
                 <div className="w-24 h-24 bg-[#F9F5F0] rounded-xl flex-shrink-0 overflow-hidden">
                   <img
                     src={item.imageUrl}
                     alt={item.name}
-                    className="w-full h-full object-cover mix-blend-multiply"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.src =
+                        "https://via.placeholder.com/150?text=No+Image";
+                    }}
                   />
                 </div>
 
@@ -87,23 +89,34 @@ const CartPage = () => {
                     {item.name}
                   </h3>
                   <p className="text-[#D98829] font-bold text-sm mt-1">
-                    {item.price}
+                    {/* Display formatted price */}₹
+                    {parsePrice(item.price).toLocaleString()}
                   </p>
                 </div>
 
                 {/* Quantity Controls */}
                 <div className="flex items-center gap-3 bg-[#FDF8E8] px-3 py-1 rounded-full border border-[#EAD2AC]">
                   <button
-                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                    onClick={() =>
+                      updateQuantity(
+                        item._id || item.id,
+                        Math.max(1, (item.quantity || 1) - 1),
+                      )
+                    }
                     className="w-8 h-8 flex items-center justify-center text-[#3E2F20] hover:text-[#D98829]"
                   >
                     <Minus size={14} />
                   </button>
                   <span className="font-bold text-[#3E2F20] w-4 text-center">
-                    {item.quantity}
+                    {item.quantity || 1}
                   </span>
                   <button
-                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                    onClick={() =>
+                      updateQuantity(
+                        item._id || item.id,
+                        (item.quantity || 1) + 1,
+                      )
+                    }
                     className="w-8 h-8 flex items-center justify-center text-[#3E2F20] hover:text-[#D98829]"
                   >
                     <Plus size={14} />
@@ -112,8 +125,9 @@ const CartPage = () => {
 
                 {/* Remove Button */}
                 <button
-                  onClick={() => removeFromCart(item.id)}
-                  className="text-stone-400 hover:text-red-500 transition-colors p-2"
+                  onClick={() => removeFromCart(item._id || item.id)}
+                  className="text-stone-400 hover:text-red-500 transition-colors p-2 sm:ml-4"
+                  title="Remove item"
                 >
                   <Trash2 size={18} />
                 </button>
@@ -131,9 +145,8 @@ const CartPage = () => {
               <div className="space-y-4 mb-6 border-b border-dashed border-[#EAD2AC] pb-6">
                 <div className="flex justify-between text-stone-600">
                   <span>Subtotal</span>
-                  {/* Using || 0 ensures it never shows NaN */}
-                  <span className="font-bold">
-                    ₹{(subtotal || 0).toLocaleString()}
+                  <span className="font-bold text-[#3E2F20]">
+                    ₹{subtotal.toLocaleString()}
                   </span>
                 </div>
                 <div className="flex justify-between text-stone-600">
@@ -150,8 +163,7 @@ const CartPage = () => {
 
               <div className="flex justify-between text-[#3E2F20] text-xl font-black mb-8">
                 <span>Total</span>
-                {/* Using || 0 ensures it never shows NaN */}
-                <span>₹{(FINAL_TOTAL || 0).toLocaleString()}</span>
+                <span>₹{FINAL_TOTAL.toLocaleString()}</span>
               </div>
 
               <Link
