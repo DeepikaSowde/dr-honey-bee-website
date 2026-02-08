@@ -13,7 +13,7 @@ const CategorySection = () => {
       subtitle: "(For Eaters)",
       buttonText: "Shop Raw Honey & Goods",
       image: "/images/Pantry.jpeg",
-      textColor: "text-gray-900",
+      textColor: "text-white",
     },
     {
       id: "apiary",
