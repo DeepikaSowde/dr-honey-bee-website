@@ -34,6 +34,7 @@ import ShippingPolicy from "./pages/ShippingPolicy";
 import ScrollToTop from "./pages/ScrollToTop";
 import CheckoutPage from "./pages/CheckoutPage";
 import AdminDashboard from "./pages/AdminDashboard";
+import OrderSuccessPage from "./pages/OrderSuccessPage"; // Import the file
 function App() {
   return (
     <CartProvider>
@@ -67,6 +68,7 @@ function App() {
           <Route path="/products" element={<ProductShowcase />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/order-success" element={<OrderSuccessPage />} />
           {/* ================= INFO PAGES ================= */}
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/about" element={<AboutPage />} />

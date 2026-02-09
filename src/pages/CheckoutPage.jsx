@@ -7,7 +7,7 @@ const CheckoutPage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  // Form State to capture customer info
+  // Form State
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -21,45 +21,125 @@ const CheckoutPage = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Real-time calculations
+  // --- Helper: Safe Price Parser ---
+  const parsePrice = (price) => {
+    if (typeof price === "number") return price;
+    if (!price) return 0;
+    // Removes "₹", commas, and spaces, then converts to number
+    return parseFloat(price.toString().replace(/[^\d.]/g, "")) || 0;
+  };
+
+  // --- Calculations ---
   const subtotal = cartItems.reduce((acc, item) => {
-    const price = parseFloat(item.price.toString().replace(/[^\d.]/g, ""));
-    return acc + price * item.quantity;
+    return acc + parsePrice(item.price) * (item.quantity || 1);
   }, 0);
 
   const shipping = subtotal > 1000 ? 0 : 50;
-  const total = subtotal + shipping;
+  const totalAmount = subtotal + shipping;
 
-  const handleConfirm = async (e) => {
+  // --- RAZORPAY PAYMENT HANDLER ---
+  const handlePayment = async (e) => {
     e.preventDefault();
+
+    // 1. Validate Form
+    if (
+      !formData.name ||
+      !formData.email ||
+      !formData.address ||
+      !formData.phone
+    ) {
+      alert("Please fill in all shipping details.");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // Connects to your LIVE Render backend URL
-      const response = await fetch(
-        "https://dr-honey-bee-website.onrender.com/api/orders",
+      // 2. Call Backend to Create Order
+      const orderRes = await fetch(
+        "https://dr-honey-bee-website.onrender.com/api/create-order",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            customer: formData,
-            items: cartItems,
-            totalAmount: total,
-          }),
+          body: JSON.stringify({ amount: totalAmount }),
         },
       );
 
-      const data = await response.json();
+      const orderData = await orderRes.json();
 
-      if (data.success) {
-        alert("Order Placed Successfully! Order ID: " + data.orderId);
-        clearCart();
-        navigate("/"); // Redirect to Home
+      if (!orderData.success) {
+        alert("Server error: Could not initiate payment.");
+        setLoading(false);
+        return;
       }
+
+      // 3. Configure Razorpay Options
+      const options = {
+        key: orderData.keyId, // Key ID from backend
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "Dr. Honey Bee Farm",
+        description: "Fresh from the Hive",
+        image: "https://res.cloudinary.com/dcrdohie2/image/upload/v1/logo.png", // Optional Logo
+        order_id: orderData.orderId, // Razorpay Order ID from backend
+
+        // 4. HANDLER: Runs when payment is successful
+        handler: async function (response) {
+          try {
+            // 5. Verify Payment on Backend
+            const verifyRes = await fetch(
+              "https://dr-honey-bee-website.onrender.com/api/verify-payment",
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                  // Pass customer & cart data to save the order now
+                  customer: formData,
+                  items: cartItems,
+                  totalAmount: totalAmount,
+                }),
+              },
+            );
+
+            const verifyData = await verifyRes.json();
+
+            if (verifyData.success) {
+              alert("Payment Successful! Order Placed.");
+              clearCart();
+              navigate("/order-success"); // Redirect to Home or Success Page
+            } else {
+              alert("Payment verification failed. Please contact support.");
+            }
+          } catch (err) {
+            console.error(err);
+            alert("Payment verified but order saving failed. Screenshot this.");
+          }
+        },
+        prefill: {
+          name: formData.name,
+          email: formData.email,
+          contact: formData.phone,
+        },
+        theme: {
+          color: "#4a3728",
+        },
+      };
+
+      // 6. Open Razorpay
+      const rzp1 = new window.Razorpay(options);
+
+      rzp1.on("payment.failed", function (response) {
+        alert("Payment Failed: " + response.error.description);
+        setLoading(false);
+      });
+
+      rzp1.open();
     } catch (error) {
-      console.error("Error:", error);
-      alert("Checkout error. Please check your internet or try again.");
-    } finally {
+      console.error("Payment Error:", error);
+      alert("Something went wrong. Please try again.");
       setLoading(false);
     }
   };
@@ -93,7 +173,8 @@ const CheckoutPage = () => {
             Shipping Information
           </h2>
           <form
-            onSubmit={handleConfirm}
+            id="checkout-form"
+            onSubmit={handlePayment}
             style={{ display: "grid", gap: "15px" }}
           >
             <input
@@ -147,11 +228,6 @@ const CheckoutPage = () => {
                 required
               />
             </div>
-            <button
-              id="hidden-submit"
-              type="submit"
-              style={{ display: "none" }}
-            ></button>
           </form>
         </section>
 
@@ -168,15 +244,14 @@ const CheckoutPage = () => {
           </h3>
           <div style={{ margin: "20px 0" }}>
             {cartItems.map((item) => (
-              <div key={item.id} style={summaryItemStyle}>
+              <div key={item._id || item.id} style={summaryItemStyle}>
                 <span>
-                  {item.name} (x{item.quantity})
+                  {item.name} (x{item.quantity || 1})
                 </span>
                 <span>
                   ₹
                   {(
-                    parseFloat(item.price.toString().replace(/[^\d.]/g, "")) *
-                    item.quantity
+                    parsePrice(item.price) * (item.quantity || 1)
                   ).toLocaleString()}
                 </span>
               </div>
@@ -190,11 +265,14 @@ const CheckoutPage = () => {
           </div>
           <div style={totalStyle}>
             <span>Total</span>
-            <span>₹{total.toLocaleString()}</span>
+            <span>₹{totalAmount.toLocaleString()}</span>
           </div>
+
+          {/* Submit Button Triggering the Form */}
           <button
+            type="submit"
+            form="checkout-form" // Connects to the form ID
             disabled={loading || cartItems.length === 0}
-            onClick={() => document.getElementById("hidden-submit").click()}
             style={{ ...btnStyle, opacity: loading ? 0.7 : 1 }}
           >
             {loading ? "PROCESSING..." : "CONFIRM & PAY NOW"}
@@ -205,6 +283,7 @@ const CheckoutPage = () => {
   );
 };
 
+// --- STYLES ---
 const containerStyle = {
   backgroundColor: "white",
   padding: "30px",
@@ -218,6 +297,7 @@ const inputStyle = {
   borderRadius: "6px",
   border: "1px solid #ddd",
   fontSize: "1rem",
+  boxSizing: "border-box",
 };
 const summaryItemStyle = {
   display: "flex",

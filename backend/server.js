@@ -3,6 +3,8 @@ import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import { v2 as cloudinary } from "cloudinary";
+import Razorpay from "razorpay";
+import crypto from "crypto";
 
 dotenv.config();
 const app = express();
@@ -11,11 +13,19 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 
-// --- 2. CLOUDINARY CONFIGURATION ---
+// --- 2. CONFIGURATIONS ---
+
+// Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Razorpay (Initialized with your LIVE keys)
+const razorpay = new Razorpay({
+  key_id: "rzp_live_SBZoaPcLlvwrSr",
+  key_secret: "u7vgiCn290tKZwNpZt5rMcbt",
 });
 
 // --- 3. MONGODB CONNECTION ---
@@ -29,6 +39,8 @@ mongoose
 const Order = mongoose.model(
   "Order",
   new mongoose.Schema({
+    orderId: String, // Razorpay Order ID
+    paymentId: String, // Razorpay Payment ID
     customer: {
       name: { type: String, required: true },
       email: { type: String, required: true },
@@ -39,7 +51,7 @@ const Order = mongoose.model(
     },
     items: { type: Array, required: true },
     totalAmount: { type: Number, required: true },
-    status: { type: String, default: "PENDING" },
+    status: { type: String, default: "PAID" }, // Default is PAID for online orders
     createdAt: { type: Date, default: Date.now },
   }),
 );
@@ -49,7 +61,7 @@ const Product = mongoose.model(
   new mongoose.Schema({
     name: { type: String, required: true },
     price: { type: Number, required: true },
-    category: { type: String, required: true }, //
+    category: { type: String, required: true },
     stockQuantity: { type: Number, default: 0 },
     description: String,
     imageUrl: String,
@@ -106,7 +118,7 @@ app.patch("/api/admin/orders/:id", adminAuth, async (req, res) => {
   }
 });
 
-// PRODUCT MANAGEMENT: Create, Update, Delete
+// PRODUCT MANAGEMENT
 
 // Create Product
 app.post("/api/admin/products", adminAuth, async (req, res) => {
@@ -119,7 +131,7 @@ app.post("/api/admin/products", adminAuth, async (req, res) => {
   }
 });
 
-// Update Product (For future price/stock changes)
+// Update Product
 app.put("/api/admin/products/:id", adminAuth, async (req, res) => {
   try {
     const updatedProduct = await Product.findByIdAndUpdate(
@@ -143,7 +155,7 @@ app.delete("/api/admin/products/:id", adminAuth, async (req, res) => {
   }
 });
 
-// --- 7. PUBLIC ROUTES ---
+// --- 7. PUBLIC ROUTES (Products) ---
 
 app.get("/api/products", async (req, res) => {
   try {
@@ -154,33 +166,91 @@ app.get("/api/products", async (req, res) => {
   }
 });
 
-// Public Checkout with Inventory Deduction
-app.post("/api/orders", async (req, res) => {
+// --- 8. PAYMENT ROUTES (Razorpay) ---
+
+// Step 1: Create Order
+app.post("/api/create-order", async (req, res) => {
   try {
-    const { customer, items, totalAmount } = req.body;
+    const { amount } = req.body;
 
-    const newOrder = new Order({ customer, items, totalAmount });
-    const savedOrder = await newOrder.save();
+    const options = {
+      amount: amount * 100, // Amount in paise (e.g., 500 INR = 50000 paise)
+      currency: "INR",
+      receipt: "receipt_" + Date.now(),
+    };
 
-    const stockUpdates = items.map((item) => {
-      return Product.findByIdAndUpdate(item._id, {
-        $inc: { stockQuantity: -item.quantity },
-      });
-    });
+    const order = await razorpay.orders.create(options);
 
-    await Promise.all(stockUpdates);
-
-    res.status(201).json({
+    res.json({
       success: true,
-      message: "Order placed and stock updated!",
-      orderId: savedOrder._id,
+      orderId: order.id,
+      amount: order.amount,
+      currency: order.currency,
+      keyId: "rzp_live_SBZoaPcLlvwrSr", // Sending Key ID to frontend
     });
   } catch (error) {
-    console.error("Order Error:", error.message);
-    res.status(500).json({ success: false, message: error.message });
+    console.error("Razorpay Create Order Error:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Payment initiation failed" });
   }
 });
 
-// --- 8. START SERVER ---
+// Step 2: Verify Payment & Save Order
+app.post("/api/verify-payment", async (req, res) => {
+  try {
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      customer,
+      items,
+      totalAmount,
+    } = req.body;
+
+    // Verify Signature
+    const body = razorpay_order_id + "|" + razorpay_payment_id;
+    const expectedSignature = crypto
+      .createHmac("sha256", "u7vgiCn290tKZwNpZt5rMcbt") // Using your Secret Key
+      .update(body.toString())
+      .digest("hex");
+
+    const isAuthentic = expectedSignature === razorpay_signature;
+
+    if (isAuthentic) {
+      // 1. Save Order to Database
+      const newOrder = new Order({
+        orderId: razorpay_order_id,
+        paymentId: razorpay_payment_id,
+        customer,
+        items,
+        totalAmount,
+        status: "PAID", // Confirmed paid status
+      });
+      await newOrder.save();
+
+      // 2. Reduce Stock Quantity
+      const stockUpdates = items.map((item) => {
+        // Handle both _id and id just in case
+        const productId = item._id || item.id;
+        return Product.findByIdAndUpdate(productId, {
+          $inc: { stockQuantity: -item.quantity },
+        });
+      });
+      await Promise.all(stockUpdates);
+
+      res.json({ success: true, message: "Payment verified and order saved!" });
+    } else {
+      res.status(400).json({ success: false, message: "Invalid Signature" });
+    }
+  } catch (error) {
+    console.error("Verification Error:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Server error during verification" });
+  }
+});
+
+// --- 9. START SERVER ---
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log(`🚀 Server flying on port ${PORT}`));
