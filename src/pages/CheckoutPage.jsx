@@ -25,7 +25,6 @@ const CheckoutPage = () => {
   const parsePrice = (price) => {
     if (typeof price === "number") return price;
     if (!price) return 0;
-    // Removes "₹", commas, and spaces, then converts to number
     return parseFloat(price.toString().replace(/[^\d.]/g, "")) || 0;
   };
 
@@ -41,7 +40,6 @@ const CheckoutPage = () => {
   const handlePayment = async (e) => {
     e.preventDefault();
 
-    // 1. Validate Form
     if (
       !formData.name ||
       !formData.email ||
@@ -75,18 +73,17 @@ const CheckoutPage = () => {
 
       // 3. Configure Razorpay Options
       const options = {
-        key: orderData.keyId, // Key ID from backend
+        key: orderData.keyId,
         amount: orderData.amount,
         currency: orderData.currency,
         name: "Dr. Honey Bee Farm",
         description: "Fresh from the Hive",
-        image: "https://res.cloudinary.com/dcrdohie2/image/upload/v1/logo.png", // Optional Logo
-        order_id: orderData.orderId, // Razorpay Order ID from backend
+        image: "https://res.cloudinary.com/dcrdohie2/image/upload/v1/logo.png",
+        order_id: orderData.orderId,
 
         // 4. HANDLER: Runs when payment is successful
         handler: async function (response) {
           try {
-            // 5. Verify Payment on Backend
             const verifyRes = await fetch(
               "https://dr-honey-bee-website.onrender.com/api/verify-payment",
               {
@@ -96,7 +93,6 @@ const CheckoutPage = () => {
                   razorpay_order_id: response.razorpay_order_id,
                   razorpay_payment_id: response.razorpay_payment_id,
                   razorpay_signature: response.razorpay_signature,
-                  // Pass customer & cart data to save the order now
                   customer: formData,
                   items: cartItems,
                   totalAmount: totalAmount,
@@ -109,7 +105,7 @@ const CheckoutPage = () => {
             if (verifyData.success) {
               alert("Payment Successful! Order Placed.");
               clearCart();
-              navigate("/order-success"); // Redirect to Home or Success Page
+              navigate("/order-success");
             } else {
               alert("Payment verification failed. Please contact support.");
             }
@@ -128,7 +124,6 @@ const CheckoutPage = () => {
         },
       };
 
-      // 6. Open Razorpay
       const rzp1 = new window.Razorpay(options);
 
       rzp1.on("payment.failed", function (response) {
@@ -145,184 +140,124 @@ const CheckoutPage = () => {
   };
 
   return (
-    <div
-      style={{
-        padding: "40px",
-        backgroundColor: "#fdfbf7",
-        minHeight: "100vh",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: "1100px",
-          margin: "0 auto",
-          display: "grid",
-          gridTemplateColumns: "1.5fr 1fr",
-          gap: "40px",
-        }}
-      >
-        {/* Left Side: Shipping Information */}
-        <section style={containerStyle}>
-          <h2
-            style={{
-              fontFamily: "serif",
-              color: "#4a3728",
-              marginBottom: "20px",
-            }}
-          >
-            Shipping Information
-          </h2>
-          <form
-            id="checkout-form"
-            onSubmit={handlePayment}
-            style={{ display: "grid", gap: "15px" }}
-          >
-            <input
-              name="name"
-              placeholder="Full Name"
-              style={inputStyle}
-              onChange={handleChange}
-              required
-            />
-            <input
-              name="email"
-              type="email"
-              placeholder="Email"
-              style={inputStyle}
-              onChange={handleChange}
-              required
-            />
-            <input
-              name="phone"
-              placeholder="Phone"
-              style={inputStyle}
-              onChange={handleChange}
-              required
-            />
-            <textarea
-              name="address"
-              placeholder="Address"
-              style={{ ...inputStyle, height: "100px" }}
-              onChange={handleChange}
-              required
-            />
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "15px",
-              }}
+    // Padding: py-6 on mobile, py-10 on desktop
+    <div className="bg-[#fdfbf7] min-h-screen py-6 md:py-10 px-4 md:px-6 font-sans">
+      <div className="max-w-6xl mx-auto">
+        {/* Responsive Grid: Flex Column on Mobile, Row on Desktop */}
+        <div className="flex flex-col lg:flex-row gap-6 md:gap-10">
+          {/* Left Side: Shipping Information */}
+          <section className="bg-white p-6 md:p-8 rounded-2xl shadow-sm h-fit flex-1 order-2 lg:order-1">
+            <h2 className="font-serif text-[#4a3728] text-xl md:text-2xl mb-6">
+              Shipping Information
+            </h2>
+            <form
+              id="checkout-form"
+              onSubmit={handlePayment}
+              className="grid grid-cols-1 gap-4"
             >
               <input
-                name="city"
-                placeholder="City"
-                style={inputStyle}
+                name="name"
+                placeholder="Full Name"
+                className="w-full p-3 md:p-4 border border-gray-300 rounded-lg text-sm md:text-base"
                 onChange={handleChange}
                 required
               />
               <input
-                name="pincode"
-                placeholder="Pincode"
-                style={inputStyle}
+                name="email"
+                type="email"
+                placeholder="Email"
+                className="w-full p-3 md:p-4 border border-gray-300 rounded-lg text-sm md:text-base"
                 onChange={handleChange}
                 required
               />
-            </div>
-          </form>
-        </section>
+              <input
+                name="phone"
+                placeholder="Phone"
+                className="w-full p-3 md:p-4 border border-gray-300 rounded-lg text-sm md:text-base"
+                onChange={handleChange}
+                required
+              />
+              <textarea
+                name="address"
+                placeholder="Address"
+                className="w-full p-3 md:p-4 border border-gray-300 rounded-lg text-sm md:text-base h-24"
+                onChange={handleChange}
+                required
+              />
+              <div className="grid grid-cols-2 gap-4">
+                <input
+                  name="city"
+                  placeholder="City"
+                  className="w-full p-3 md:p-4 border border-gray-300 rounded-lg text-sm md:text-base"
+                  onChange={handleChange}
+                  required
+                />
+                <input
+                  name="pincode"
+                  placeholder="Pincode"
+                  className="w-full p-3 md:p-4 border border-gray-300 rounded-lg text-sm md:text-base"
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </form>
+          </section>
 
-        {/* Right Side: Order Summary */}
-        <aside style={containerStyle}>
-          <h3
-            style={{
-              color: "#4a3728",
-              borderBottom: "1px solid #eee",
-              paddingBottom: "10px",
-            }}
-          >
-            Your Order
-          </h3>
-          <div style={{ margin: "20px 0" }}>
-            {cartItems.map((item) => (
-              <div key={item._id || item.id} style={summaryItemStyle}>
-                <span>
-                  {item.name} (x{item.quantity || 1})
-                </span>
-                <span>
-                  ₹
-                  {(
-                    parsePrice(item.price) * (item.quantity || 1)
-                  ).toLocaleString()}
+          {/* Right Side: Order Summary */}
+          <aside className="bg-white p-6 md:p-8 rounded-2xl shadow-sm h-fit w-full lg:w-[400px] order-1 lg:order-2">
+            <h3 className="text-[#4a3728] border-b border-gray-100 pb-4 mb-4 font-bold text-lg md:text-xl">
+              Your Order
+            </h3>
+            <div className="space-y-3 mb-6">
+              {cartItems.map((item) => (
+                <div
+                  key={item._id || item.id}
+                  className="flex justify-between text-gray-600 text-sm md:text-base"
+                >
+                  <span>
+                    {item.name} (x{item.quantity || 1})
+                  </span>
+                  <span>
+                    ₹
+                    {(
+                      parsePrice(item.price) * (item.quantity || 1)
+                    ).toLocaleString()}
+                  </span>
+                </div>
+              ))}
+              <div className="flex justify-between text-gray-600 text-sm md:text-base">
+                <span>Shipping</span>
+                <span
+                  className={
+                    shipping === 0
+                      ? "text-green-600 font-bold"
+                      : "text-gray-600"
+                  }
+                >
+                  {shipping === 0 ? "FREE" : `₹${shipping}`}
                 </span>
               </div>
-            ))}
-            <div style={summaryItemStyle}>
-              <span>Shipping</span>
-              <span style={{ color: shipping === 0 ? "green" : "#555" }}>
-                {shipping === 0 ? "FREE" : `₹${shipping}`}
-              </span>
             </div>
-          </div>
-          <div style={totalStyle}>
-            <span>Total</span>
-            <span>₹{totalAmount.toLocaleString()}</span>
-          </div>
 
-          {/* Submit Button Triggering the Form */}
-          <button
-            type="submit"
-            form="checkout-form" // Connects to the form ID
-            disabled={loading || cartItems.length === 0}
-            style={{ ...btnStyle, opacity: loading ? 0.7 : 1 }}
-          >
-            {loading ? "PROCESSING..." : "CONFIRM & PAY NOW"}
-          </button>
-        </aside>
+            <div className="flex justify-between border-t-2 border-[#4a3728] pt-4 font-bold text-lg md:text-xl text-[#4a3728] mb-6">
+              <span>Total</span>
+              <span>₹{totalAmount.toLocaleString()}</span>
+            </div>
+
+            {/* Submit Button Triggering the Form */}
+            <button
+              type="submit"
+              form="checkout-form" // Connects to the form ID
+              disabled={loading || cartItems.length === 0}
+              className={`w-full bg-[#4a3728] text-white py-4 rounded-xl font-bold uppercase tracking-widest hover:bg-[#5C4D3C] transition-colors shadow-lg ${loading ? "opacity-70 cursor-not-allowed" : ""}`}
+            >
+              {loading ? "PROCESSING..." : "CONFIRM & PAY NOW"}
+            </button>
+          </aside>
+        </div>
       </div>
     </div>
   );
-};
-
-// --- STYLES ---
-const containerStyle = {
-  backgroundColor: "white",
-  padding: "30px",
-  borderRadius: "12px",
-  boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
-  height: "fit-content",
-};
-const inputStyle = {
-  width: "100%",
-  padding: "12px",
-  borderRadius: "6px",
-  border: "1px solid #ddd",
-  fontSize: "1rem",
-  boxSizing: "border-box",
-};
-const summaryItemStyle = {
-  display: "flex",
-  justifyContent: "space-between",
-  marginBottom: "10px",
-  color: "#555",
-};
-const totalStyle = {
-  borderTop: "2px solid #4a3728",
-  paddingTop: "15px",
-  display: "flex",
-  justifyContent: "space-between",
-  fontWeight: "bold",
-  fontSize: "1.2rem",
-};
-const btnStyle = {
-  width: "100%",
-  marginTop: "25px",
-  padding: "15px",
-  backgroundColor: "#4a3728",
-  color: "white",
-  border: "none",
-  borderRadius: "6px",
-  fontWeight: "bold",
-  cursor: "pointer",
 };
 
 export default CheckoutPage;

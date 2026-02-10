@@ -134,6 +134,13 @@ const Navbar = () => {
             SHOP PRODUCTS
           </Link>
           <Link
+            to="/about"
+            onClick={() => setIsMenuOpen(false)}
+            className="font-montserrat font-bold text-[#5C4D3C] hover:text-amber-600"
+          >
+            ABOUT
+          </Link>
+          <Link
             to="/contact"
             onClick={() => setIsMenuOpen(false)}
             className="font-montserrat font-bold text-[#5C4D3C] hover:text-amber-600"

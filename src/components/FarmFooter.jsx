@@ -12,17 +12,20 @@ import {
 
 const FarmFooter = () => {
   return (
-    <footer className="bg-[#2A2118] text-[#EAD2AC] relative pt-20 pb-10 overflow-hidden font-sans">
+    // Responsive Padding: pt-12 for mobile, pt-20 for desktop
+    <footer className="bg-[#2A2118] text-[#EAD2AC] relative pt-12 pb-8 md:pt-20 md:pb-10 overflow-hidden font-sans">
       {/* 1. Newsletter Section */}
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-900 via-amber-500 to-amber-900"></div>
 
-      <div className="max-w-7xl mx-auto px-6 mb-16 relative z-10">
-        <div className="bg-[#3E2F20] rounded-2xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between border border-[#5C4D3C] shadow-2xl">
-          <div className="mb-6 md:mb-0 md:w-1/2">
-            <h3 className="text-3xl font-serif text-white mb-2">
+      {/* Margin Bottom: mb-10 on mobile, mb-16 on desktop */}
+      <div className="max-w-7xl mx-auto px-4 md:px-6 mb-10 md:mb-16 relative z-10">
+        <div className="bg-[#3E2F20] rounded-2xl p-6 md:p-12 flex flex-col md:flex-row items-center justify-between border border-[#5C4D3C] shadow-2xl">
+          <div className="mb-6 md:mb-0 md:w-1/2 text-center md:text-left">
+            {/* Title Size: text-2xl on mobile */}
+            <h3 className="text-2xl md:text-3xl font-serif text-white mb-2">
               Join the Colony
             </h3>
-            <p className="text-stone-400">
+            <p className="text-stone-400 text-sm md:text-base">
               Get weekly beekeeping tips & 10% off your first jar of raw honey.
             </p>
           </div>
@@ -31,9 +34,9 @@ const FarmFooter = () => {
               <input
                 type="email"
                 placeholder="Enter your email..."
-                className="flex-grow bg-transparent px-6 py-3 text-white outline-none placeholder-stone-600 w-full"
+                className="flex-grow bg-transparent px-4 md:px-6 py-2 md:py-3 text-white outline-none placeholder-stone-600 w-full text-sm md:text-base"
               />
-              <button className="bg-amber-600 hover:bg-amber-500 text-white px-6 md:px-8 py-3 rounded-full font-bold transition-all flex items-center gap-2 shrink-0">
+              <button className="bg-amber-600 hover:bg-amber-500 text-white px-4 md:px-8 py-2 md:py-3 rounded-full font-bold transition-all flex items-center gap-2 shrink-0">
                 <span className="hidden md:inline">Subscribe</span>{" "}
                 <ArrowRight size={18} />
               </button>
@@ -43,13 +46,14 @@ const FarmFooter = () => {
       </div>
 
       {/* 2. Main Footer Content */}
-      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 border-b border-[#3E2F20] pb-12">
+      {/* Grid Gap: gap-8 on mobile, gap-12 on desktop */}
+      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12 border-b border-[#3E2F20] pb-8 md:pb-12 text-center md:text-left">
         {/* Brand Column */}
-        <div className="space-y-4">
-          <h2 className="text-2xl font-serif font-black text-white tracking-widest">
+        <div className="space-y-4 flex flex-col items-center md:items-start">
+          <h2 className="text-xl md:text-2xl font-serif font-black text-white tracking-widest">
             DR. HONEY BEE FARM
           </h2>
-          <p className="text-stone-500 text-sm leading-relaxed">
+          <p className="text-stone-500 text-sm leading-relaxed max-w-xs mx-auto md:mx-0">
             <span className="text-stone-300 font-bold">
               Proprietor: A. Esak
             </span>
@@ -62,7 +66,7 @@ const FarmFooter = () => {
             GSTIN: 33AAZPE3054F1ZR
           </div>
 
-          <div className="flex gap-4 pt-4">
+          <div className="flex gap-4 pt-4 justify-center md:justify-start">
             {[Facebook, Instagram, Twitter].map((Icon, i) => (
               <a
                 key={i}
@@ -77,7 +81,7 @@ const FarmFooter = () => {
 
         {/* Quick Links */}
         <div>
-          <h4 className="text-white font-bold uppercase tracking-widest mb-6 text-sm">
+          <h4 className="text-white font-bold uppercase tracking-widest mb-4 md:mb-6 text-sm">
             Shop
           </h4>
           <ul className="space-y-3 text-stone-400 text-sm">
@@ -116,9 +120,9 @@ const FarmFooter = () => {
           </ul>
         </div>
 
-        {/* Support & Legal (UPDATED FOR RAZORPAY) */}
+        {/* Support & Legal */}
         <div>
-          <h4 className="text-white font-bold uppercase tracking-widest mb-6 text-sm">
+          <h4 className="text-white font-bold uppercase tracking-widest mb-4 md:mb-6 text-sm">
             Support
           </h4>
           <ul className="space-y-3 text-stone-400 text-sm">
@@ -138,8 +142,6 @@ const FarmFooter = () => {
                 About the Farm
               </Link>
             </li>
-
-            {/* 👇 THESE LINKS ARE REQUIRED FOR APPROVAL */}
             <li>
               <Link
                 to="/shipping-policy"
@@ -176,13 +178,13 @@ const FarmFooter = () => {
         </div>
 
         {/* Contact Info */}
-        <div>
-          <h4 className="text-white font-bold uppercase tracking-widest mb-6 text-sm">
+        <div className="flex flex-col items-center md:items-start">
+          <h4 className="text-white font-bold uppercase tracking-widest mb-4 md:mb-6 text-sm">
             Visit Us
           </h4>
           <ul className="space-y-4 text-stone-400 text-sm">
-            <li className="flex gap-3 items-start">
-              <MapPin className="text-amber-600 shrink-0" size={20} />
+            <li className="flex gap-3 items-start justify-center md:justify-start text-left">
+              <MapPin className="text-amber-600 shrink-0 mt-1" size={18} />
               <span>
                 115A, Ottar Street, Ayakudi,
                 <br />
@@ -191,8 +193,8 @@ const FarmFooter = () => {
                 Pin: 624 613
               </span>
             </li>
-            <li className="flex gap-3 items-center">
-              <Phone className="text-amber-600 shrink-0" size={20} />
+            <li className="flex gap-3 items-center justify-center md:justify-start">
+              <Phone className="text-amber-600 shrink-0" size={18} />
               <a
                 href="tel:+919994087710"
                 className="hover:text-amber-500 transition-colors"
@@ -200,8 +202,8 @@ const FarmFooter = () => {
                 +91 99940 87710
               </a>
             </li>
-            <li className="flex gap-3 items-center">
-              <Mail className="text-amber-600 shrink-0" size={20} />
+            <li className="flex gap-3 items-center justify-center md:justify-start">
+              <Mail className="text-amber-600 shrink-0" size={18} />
               <a
                 href="mailto:esakreemas@gmail.com"
                 className="hover:text-amber-500 transition-colors"
@@ -214,7 +216,7 @@ const FarmFooter = () => {
       </div>
 
       {/* 3. Copyright */}
-      <div className="max-w-7xl mx-auto px-6 pt-8 text-center text-stone-600 text-xs">
+      <div className="max-w-7xl mx-auto px-6 pt-8 text-center text-stone-600 text-[10px] md:text-xs">
         <p>
           &copy; {new Date().getFullYear()} DR. Honey Bee Farm. All rights
           reserved.

@@ -1,10 +1,8 @@
 import React, { useState } from "react";
 import { ShoppingCart } from "lucide-react";
-// 1. IMPORT THE HOOK
 import { useCart } from "../context/CartContext";
 
 const ProductShowcase = () => {
-  // 2. GET THE FUNCTION FROM THE BRAIN
   const { addToCart } = useCart();
 
   // --- DATA: ALL YOUR PRODUCTS ---
@@ -150,25 +148,28 @@ const ProductShowcase = () => {
       : products.filter((p) => p.category === activeTab);
 
   return (
-    <section className="py-16 bg-[#FDFCF8]">
-      <div className="max-w-7xl mx-auto px-6">
+    // Padding: py-10 on mobile, py-16 on desktop
+    <section className="py-10 md:py-16 bg-[#FDFCF8]">
+      <div className="max-w-7xl mx-auto px-4 md:px-6">
         {/* SECTION TITLE */}
-        <div className="text-center mb-12">
-          <h2 className="font-merriweather text-3xl md:text-4xl text-[#3E2F20] font-bold">
+        <div className="text-center mb-8 md:mb-12">
+          {/* Title Size: text-2xl on mobile, text-4xl on desktop */}
+          <h2 className="font-merriweather text-2xl md:text-4xl text-[#3E2F20] font-bold">
             Our Farm Shop
           </h2>
-          <p className="text-[#8C7A63] mt-2 font-montserrat uppercase tracking-widest text-sm">
+          <p className="text-[#8C7A63] mt-2 font-montserrat uppercase tracking-widest text-[10px] md:text-sm">
             From the hive to your home
           </p>
         </div>
 
         {/* CATEGORY TABS */}
-        <div className="flex flex-wrap justify-center gap-4 mb-10">
+        <div className="flex flex-wrap justify-center gap-3 md:gap-4 mb-8 md:mb-10">
           {["all", "honey", "equipment", "bees"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-6 py-2 rounded-full font-bold text-sm uppercase tracking-wide transition-all ${
+              // Button Size: Smaller text/padding on mobile
+              className={`px-4 py-2 md:px-6 md:py-2 rounded-full font-bold text-xs md:text-sm uppercase tracking-wide transition-all ${
                 activeTab === tab
                   ? "bg-[#D98829] text-white shadow-md"
                   : "bg-white text-[#5C4D3C] border border-[#EAD2AC] hover:bg-[#FDF8E8]"
@@ -177,21 +178,23 @@ const ProductShowcase = () => {
               {tab === "all"
                 ? "All Products"
                 : tab === "bees"
-                ? "Live Bees"
-                : tab}
+                  ? "Live Bees"
+                  : tab}
             </button>
           ))}
         </div>
 
         {/* PRODUCT GRID */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        {/* Gap: gap-4 on mobile, gap-8 on desktop */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
           {displayedProducts.map((product) => (
             <div
               key={product.id}
               className="group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-[#F0E6D2] overflow-hidden flex flex-col"
             >
               {/* Image Area */}
-              <div className="relative h-64 bg-[#F9F5F0] overflow-hidden">
+              {/* Height: h-48 on mobile, h-64 on desktop */}
+              <div className="relative h-48 md:h-64 bg-[#F9F5F0] overflow-hidden">
                 <div className="absolute inset-0 flex items-center justify-center text-[#D6C0A0] font-bold text-xl uppercase opacity-30">
                   {product.name}
                 </div>
@@ -204,31 +207,33 @@ const ProductShowcase = () => {
                   }}
                 />
                 {product.tag && (
-                  <div className="absolute top-3 left-3 bg-[#D98829] text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                  <div className="absolute top-3 left-3 bg-[#D98829] text-white text-[10px] md:text-xs font-bold px-2 py-1 md:px-3 rounded-full uppercase tracking-wider">
                     {product.tag}
                   </div>
                 )}
               </div>
 
               {/* Content Area */}
-              <div className="p-5 flex flex-col flex-grow text-center">
-                <h3 className="font-merriweather text-lg font-bold text-[#3E2F20] mb-1">
+              {/* Padding: p-4 on mobile, p-5 on desktop */}
+              <div className="p-4 md:p-5 flex flex-col flex-grow text-center">
+                <h3 className="font-merriweather text-base md:text-lg font-bold text-[#3E2F20] mb-1">
                   {product.name}
                 </h3>
                 {product.desc && (
-                  <p className="text-xs text-gray-500 mb-2">{product.desc}</p>
+                  <p className="text-[10px] md:text-xs text-gray-500 mb-2">
+                    {product.desc}
+                  </p>
                 )}
                 <div className="mt-auto pt-3">
-                  <p className="font-montserrat text-[#D98829] font-bold text-lg mb-3">
+                  <p className="font-montserrat text-[#D98829] font-bold text-base md:text-lg mb-3">
                     {product.price}
                   </p>
 
-                  {/* 3. ATTACH THE CLICK HANDLER HERE */}
                   <button
                     onClick={() => addToCart(product)}
-                    className="w-full py-2 border-2 border-[#3E2F20] text-[#3E2F20] font-bold text-xs uppercase hover:bg-[#3E2F20] hover:text-white transition-colors rounded active:scale-95"
+                    className="w-full py-2 border-2 border-[#3E2F20] text-[#3E2F20] font-bold text-[10px] md:text-xs uppercase hover:bg-[#3E2F20] hover:text-white transition-colors rounded active:scale-95 flex items-center justify-center gap-2"
                   >
-                    Add to Cart
+                    <ShoppingCart size={14} md={16} /> Add to Cart
                   </button>
                 </div>
               </div>

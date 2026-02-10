@@ -55,7 +55,7 @@ const AdminDashboard = () => {
     fetchData(password);
   };
 
-  // --- INVENTORY ACTIONS (Update Price/Stock/Delete) ---
+  // --- INVENTORY ACTIONS ---
   const handleUpdateProduct = async (id, updatedFields) => {
     try {
       const res = await fetch(
@@ -174,11 +174,15 @@ const AdminDashboard = () => {
     }
   };
 
+  // --- LOGIN SCREEN ---
   if (!isAuthenticated) {
     return (
-      <div style={loginContainer}>
-        <form onSubmit={handleLogin} style={loginBox}>
-          <h2 style={{ color: "#4a3728", marginBottom: "20px" }}>
+      <div className="min-h-screen flex items-center justify-center bg-[#fdfbf7] px-4">
+        <form
+          onSubmit={handleLogin}
+          className="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm text-center"
+        >
+          <h2 className="text-[#4a3728] text-2xl mb-6 font-serif font-bold">
             🐝 Admin Portal
           </h2>
           <input
@@ -186,316 +190,255 @@ const AdminDashboard = () => {
             placeholder="Admin Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            style={inputStyle}
+            className="w-full p-3 mb-4 border border-gray-300 rounded-lg"
             required
           />
-          <button type="submit" style={btnStyle} disabled={loading}>
+          <button
+            type="submit"
+            className="w-full bg-[#4a3728] text-white p-3 rounded-lg font-bold hover:bg-[#5C4D3C] transition-colors"
+            disabled={loading}
+          >
             {loading ? "Authenticating..." : "Login"}
           </button>
-          {error && <p style={{ color: "red", marginTop: "15px" }}>{error}</p>}
+          {error && <p className="text-red-500 mt-4 text-sm">{error}</p>}
         </form>
       </div>
     );
   }
 
+  // --- DASHBOARD SCREEN ---
   return (
-    <div
-      style={{
-        padding: "40px",
-        maxWidth: "1200px",
-        margin: "0 auto",
-        minHeight: "100vh",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "30px",
-        }}
-      >
-        <h1 style={{ color: "#4a3728", fontFamily: "serif" }}>
-          Honey Farm Dashboard
-        </h1>
-        <button onClick={() => window.location.reload()} style={logoutBtn}>
-          Logout
-        </button>
-      </div>
-
-      {/* 1. UPLOAD SECTION */}
-      <section style={formSectionStyle}>
-        <h3 style={{ marginTop: 0, color: "#4a3728" }}>Add New Product</h3>
-        <form
-          onSubmit={handleAddProduct}
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "15px",
-          }}
-        >
-          <input
-            placeholder="Product Name"
-            value={newProduct.name}
-            style={inputStyle}
-            onChange={(e) =>
-              setNewProduct({ ...newProduct, name: e.target.value })
-            }
-            required
-          />
-          <input
-            placeholder="Price (₹)"
-            type="number"
-            value={newProduct.price}
-            style={inputStyle}
-            onChange={(e) =>
-              setNewProduct({ ...newProduct, price: e.target.value })
-            }
-            required
-          />
-          <select
-            value={newProduct.category}
-            style={inputStyle}
-            onChange={(e) =>
-              setNewProduct({ ...newProduct, category: e.target.value })
-            }
-          >
-            <option value="Honey">Honey</option>
-            <option value="Equipment">Equipment</option>
-            <option value="Soap">Soap</option>
-          </select>
-          <input
-            placeholder="Stock Qty"
-            type="number"
-            value={newProduct.stockQuantity}
-            style={inputStyle}
-            onChange={(e) =>
-              setNewProduct({ ...newProduct, stockQuantity: e.target.value })
-            }
-            required
-          />
-          <textarea
-            placeholder="Description"
-            value={newProduct.description}
-            style={{ ...inputStyle, gridColumn: "span 2" }}
-            onChange={(e) =>
-              setNewProduct({ ...newProduct, description: e.target.value })
-            }
-          />
-          <div style={{ gridColumn: "span 2" }}>
-            <input
-              type="file"
-              onChange={handleFileInputChange}
-              accept="image/*"
-            />
-            {previewSource && (
-              <img
-                src={previewSource}
-                alt="Preview"
-                style={{
-                  width: "60px",
-                  marginTop: "10px",
-                  borderRadius: "4px",
-                }}
-              />
-            )}
-          </div>
+    <div className="min-h-screen bg-[#fdfbf7] p-4 md:p-10 font-sans">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+          <h1 className="text-2xl md:text-3xl font-serif text-[#4a3728] font-bold">
+            Honey Farm Dashboard
+          </h1>
           <button
-            type="submit"
-            style={{ ...btnStyle, gridColumn: "span 2" }}
-            disabled={isUploading}
+            onClick={() => window.location.reload()}
+            className="bg-[#8d6e63] text-white px-6 py-2 rounded-lg hover:bg-[#6d4c41] transition-colors text-sm font-bold"
           >
-            {isUploading ? "Uploading..." : "Publish to Shop"}
+            Logout
           </button>
-        </form>
-      </section>
-
-      {/* 2. INVENTORY MANAGEMENT */}
-      <section style={formSectionStyle}>
-        <h3 style={{ color: "#4a3728" }}>Manage Inventory</h3>
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr
-                style={{ borderBottom: "2px solid #4a3728", textAlign: "left" }}
-              >
-                <th style={tdStyle}>Product</th>
-                <th style={tdStyle}>Price (₹)</th>
-                <th style={tdStyle}>Stock</th>
-                <th style={tdStyle}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {inventory.map((item) => (
-                <tr key={item._id} style={{ borderBottom: "1px solid #eee" }}>
-                  <td style={tdStyle}>{item.name}</td>
-                  <td style={tdStyle}>
-                    <input
-                      type="number"
-                      defaultValue={item.price}
-                      style={{ width: "80px" }}
-                      onBlur={(e) =>
-                        handleUpdateProduct(item._id, { price: e.target.value })
-                      }
-                    />
-                  </td>
-                  <td style={tdStyle}>
-                    <input
-                      type="number"
-                      defaultValue={item.stockQuantity}
-                      style={{ width: "60px" }}
-                      onBlur={(e) =>
-                        handleUpdateProduct(item._id, {
-                          stockQuantity: e.target.value,
-                        })
-                      }
-                    />
-                  </td>
-                  <td style={tdStyle}>
-                    <button
-                      onClick={() => handleDeleteProduct(item._id)}
-                      style={{
-                        color: "red",
-                        cursor: "pointer",
-                        border: "none",
-                        background: "none",
-                      }}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </div>
-      </section>
 
-      {/* 3. ORDERS TABLE */}
-      <h3 style={{ color: "#4a3728" }}>Customer Orders</h3>
-      <table style={tableStyle}>
-        <thead>
-          <tr style={{ backgroundColor: "#4a3728", color: "white" }}>
-            <th style={tableHeader}>Date</th>
-            <th style={tableHeader}>Customer</th>
-            <th style={tableHeader}>Shipping Address</th>
-            <th style={tableHeader}>Items</th>
-            <th style={tableHeader}>Total</th>
-            <th style={tableHeader}>Status</th>
-            <th style={tableHeader}>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {orders.map((order) => (
-            <tr key={order._id} style={{ borderBottom: "1px solid #ddd" }}>
-              <td style={tdStyle}>
-                {new Date(order.createdAt).toLocaleDateString()}
-              </td>
-              <td style={tdStyle}>
-                <strong>{order.customer.name}</strong>
-                <br />
-                {order.customer.phone}
-              </td>
-              <td style={tdStyle}>
-                {order.customer.address}, {order.customer.city} -{" "}
-                {order.customer.pincode}
-              </td>
-              <td style={tdStyle}>
-                {order.items.map((item, i) => (
-                  <div key={i}>
-                    • {item.name} (x{item.quantity})
-                  </div>
+        {/* 1. UPLOAD SECTION */}
+        <section className="bg-white p-6 rounded-xl shadow-sm mb-8">
+          <h3 className="text-xl text-[#4a3728] font-bold mb-6">
+            Add New Product
+          </h3>
+          <form
+            onSubmit={handleAddProduct}
+            className="grid grid-cols-1 md:grid-cols-2 gap-4"
+          >
+            <input
+              placeholder="Product Name"
+              value={newProduct.name}
+              className="p-3 border rounded-lg w-full"
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, name: e.target.value })
+              }
+              required
+            />
+            <input
+              placeholder="Price (₹)"
+              type="number"
+              value={newProduct.price}
+              className="p-3 border rounded-lg w-full"
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, price: e.target.value })
+              }
+              required
+            />
+            <select
+              value={newProduct.category}
+              className="p-3 border rounded-lg w-full"
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, category: e.target.value })
+              }
+            >
+              <option value="Honey">Honey</option>
+              <option value="Equipment">Equipment</option>
+              <option value="Soap">Soap</option>
+            </select>
+            <input
+              placeholder="Stock Qty"
+              type="number"
+              value={newProduct.stockQuantity}
+              className="p-3 border rounded-lg w-full"
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, stockQuantity: e.target.value })
+              }
+              required
+            />
+            <textarea
+              placeholder="Description"
+              value={newProduct.description}
+              className="p-3 border rounded-lg w-full md:col-span-2 h-24"
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, description: e.target.value })
+              }
+            />
+            <div className="md:col-span-2">
+              <input
+                type="file"
+                onChange={handleFileInputChange}
+                accept="image/*"
+                className="mb-2"
+              />
+              {previewSource && (
+                <img
+                  src={previewSource}
+                  alt="Preview"
+                  className="w-16 h-16 object-cover rounded-md mt-2"
+                />
+              )}
+            </div>
+            <button
+              type="submit"
+              className="md:col-span-2 bg-[#4a3728] text-white p-3 rounded-lg font-bold hover:bg-[#5C4D3C] transition-colors"
+              disabled={isUploading}
+            >
+              {isUploading ? "Uploading..." : "Publish to Shop"}
+            </button>
+          </form>
+        </section>
+
+        {/* 2. INVENTORY MANAGEMENT */}
+        <section className="bg-white p-6 rounded-xl shadow-sm mb-8">
+          <h3 className="text-xl text-[#4a3728] font-bold mb-6">
+            Manage Inventory
+          </h3>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse min-w-[600px]">
+              <thead>
+                <tr className="border-b-2 border-[#4a3728] text-left">
+                  <th className="p-3 font-bold text-[#4a3728]">Product</th>
+                  <th className="p-3 font-bold text-[#4a3728]">Price (₹)</th>
+                  <th className="p-3 font-bold text-[#4a3728]">Stock</th>
+                  <th className="p-3 font-bold text-[#4a3728]">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {inventory.map((item) => (
+                  <tr key={item._id} className="border-b border-gray-100">
+                    <td className="p-3 text-sm">{item.name}</td>
+                    <td className="p-3">
+                      <input
+                        type="number"
+                        defaultValue={item.price}
+                        className="w-20 p-1 border rounded"
+                        onBlur={(e) =>
+                          handleUpdateProduct(item._id, {
+                            price: e.target.value,
+                          })
+                        }
+                      />
+                    </td>
+                    <td className="p-3">
+                      <input
+                        type="number"
+                        defaultValue={item.stockQuantity}
+                        className="w-16 p-1 border rounded"
+                        onBlur={(e) =>
+                          handleUpdateProduct(item._id, {
+                            stockQuantity: e.target.value,
+                          })
+                        }
+                      />
+                    </td>
+                    <td className="p-3">
+                      <button
+                        onClick={() => handleDeleteProduct(item._id)}
+                        className="text-red-500 hover:text-red-700 font-bold text-sm"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
                 ))}
-              </td>
-              <td style={tdStyle}>₹{order.totalAmount}</td>
-              <td
-                style={{
-                  ...tdStyle,
-                  color: order.status === "PENDING" ? "orange" : "green",
-                  fontWeight: "bold",
-                }}
-              >
-                {order.status}
-              </td>
-              <td style={tdStyle}>
-                {order.status === "PENDING" && (
-                  <button
-                    onClick={() => updateOrderStatus(order._id, "SHIPPED")}
-                    style={shipBtn}
-                  >
-                    Mark Shipped
-                  </button>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {/* 3. ORDERS TABLE */}
+        <section className="bg-white p-6 rounded-xl shadow-sm">
+          <h3 className="text-xl text-[#4a3728] font-bold mb-6">
+            Customer Orders
+          </h3>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse min-w-[900px]">
+              <thead>
+                <tr className="bg-[#4a3728] text-white text-left">
+                  <th className="p-4 rounded-tl-lg">Date</th>
+                  <th className="p-4">Customer</th>
+                  <th className="p-4">Shipping Address</th>
+                  <th className="p-4">Items</th>
+                  <th className="p-4">Total</th>
+                  <th className="p-4">Status</th>
+                  <th className="p-4 rounded-tr-lg">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {orders.map((order) => (
+                  <tr key={order._id} className="border-b border-gray-200">
+                    <td className="p-4 text-sm">
+                      {new Date(order.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="p-4 text-sm">
+                      <strong className="block text-[#4a3728]">
+                        {order.customer.name}
+                      </strong>
+                      <span className="text-gray-500">
+                        {order.customer.phone}
+                      </span>
+                    </td>
+                    <td className="p-4 text-sm max-w-xs">
+                      {order.customer.address}, {order.customer.city} -{" "}
+                      {order.customer.pincode}
+                    </td>
+                    <td className="p-4 text-sm">
+                      {order.items.map((item, i) => (
+                        <div key={i} className="mb-1">
+                          • {item.name} (x{item.quantity})
+                        </div>
+                      ))}
+                    </td>
+                    <td className="p-4 font-bold text-[#4a3728]">
+                      ₹{order.totalAmount}
+                    </td>
+                    <td
+                      className={`p-4 font-bold text-sm ${
+                        order.status === "PENDING"
+                          ? "text-orange-500"
+                          : "text-green-600"
+                      }`}
+                    >
+                      {order.status}
+                    </td>
+                    <td className="p-4">
+                      {order.status === "PENDING" && (
+                        <button
+                          onClick={() =>
+                            updateOrderStatus(order._id, "SHIPPED")
+                          }
+                          className="bg-green-700 text-white px-3 py-1 rounded text-xs font-bold hover:bg-green-800"
+                        >
+                          Mark Shipped
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
     </div>
   );
-};
-
-// --- STYLES ---
-const loginContainer = {
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  height: "100vh",
-  backgroundColor: "#fdfbf7",
-};
-const loginBox = {
-  padding: "40px",
-  backgroundColor: "white",
-  borderRadius: "12px",
-  boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-  textAlign: "center",
-  width: "350px",
-};
-const inputStyle = {
-  width: "100%",
-  padding: "12px",
-  borderRadius: "6px",
-  border: "1px solid #ddd",
-  boxSizing: "border-box",
-};
-const formSectionStyle = {
-  backgroundColor: "white",
-  padding: "25px",
-  borderRadius: "12px",
-  boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
-  marginBottom: "40px",
-};
-const tableStyle = {
-  width: "100%",
-  borderCollapse: "collapse",
-  backgroundColor: "white",
-};
-const tableHeader = { padding: "15px", textAlign: "left" };
-const tdStyle = { padding: "12px", verticalAlign: "top" };
-const btnStyle = {
-  backgroundColor: "#4a3728",
-  color: "white",
-  border: "none",
-  padding: "12px",
-  borderRadius: "6px",
-  cursor: "pointer",
-  fontWeight: "bold",
-};
-const shipBtn = {
-  backgroundColor: "#2e7d32",
-  color: "white",
-  border: "none",
-  padding: "8px 12px",
-  borderRadius: "4px",
-  cursor: "pointer",
-};
-const logoutBtn = {
-  backgroundColor: "#8d6e63",
-  color: "white",
-  border: "none",
-  padding: "8px 16px",
-  borderRadius: "6px",
-  cursor: "pointer",
 };
 
 export default AdminDashboard;
