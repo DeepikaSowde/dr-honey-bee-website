@@ -5,8 +5,15 @@ import dotenv from "dotenv";
 import { v2 as cloudinary } from "cloudinary";
 import Razorpay from "razorpay";
 import crypto from "crypto";
+import path from "path"; // <--- ADDED
+import { fileURLToPath } from "url"; // <--- ADDED
 
 dotenv.config();
+
+// --- CONFIG FOR DIRECTORY PATHS (Required for ES Modules) ---
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
 
 // --- 1. MIDDLEWARE ---
@@ -56,15 +63,28 @@ const Order = mongoose.model(
   }),
 );
 
+// --- UPDATED PRODUCT SCHEMA (Now supports Variants) ---
 const Product = mongoose.model(
   "Product",
   new mongoose.Schema({
     name: { type: String, required: true },
-    price: { type: Number, required: true },
     category: { type: String, required: true },
-    stockQuantity: { type: Number, default: 0 },
     description: String,
     imageUrl: String,
+
+    // For Equipment/Soap (Single Price)
+    price: { type: Number },
+    stockQuantity: { type: Number, default: 0 },
+
+    // For Honey (Multiple Sizes)
+    variants: [
+      {
+        size: String, // e.g., "500g", "1kg"
+        price: Number, // e.g., 350, 650
+        stock: Number, // e.g., 20
+      },
+    ],
+
     inStock: { type: Boolean, default: true },
     createdAt: { type: Date, default: Date.now },
   }),
@@ -251,6 +271,15 @@ app.post("/api/verify-payment", async (req, res) => {
   }
 });
 
-// --- 9. START SERVER ---
+// --- 9. SERVE FRONTEND (This fixes "Cannot GET /") ---
+// Ensure this comes AFTER all API routes
+// NOTE: Ensure your frontend build folder is named 'client/dist' or 'frontend/dist'
+app.use(express.static(path.join(__dirname, "../client/dist")));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../client/dist/index.html"));
+});
+
+// --- 10. START SERVER ---
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log(`🚀 Server flying on port ${PORT}`));
