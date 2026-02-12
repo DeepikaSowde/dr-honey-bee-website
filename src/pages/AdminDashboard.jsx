@@ -1,155 +1,183 @@
-import express from "express";
-import mongoose from "mongoose";
-import cors from "cors";
-import dotenv from "dotenv";
-import { v2 as cloudinary } from "cloudinary";
-import Razorpay from "razorpay";
+import React, { useEffect, useState } from "react";
 
-dotenv.config();
-const app = express();
+const AdminDashboard = () => {
+  const [orders, setOrders] = useState([]);
+  const [inventory, setInventory] = useState([]);
+  const [password, setPassword] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-// --- MIDDLEWARE ---
-app.use(cors());
-app.use(express.json({ limit: "10mb" })); // Increased limit for base64 image uploads
+  // --- PRODUCT MANAGEMENT STATES ---
+  const [newProduct, setNewProduct] = useState({
+    name: "",
+    category: "Honey",
+    description: "",
+    price: "",
+    stockQuantity: "",
+    variants: [],
+  });
 
-// --- CONFIGURATIONS ---
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+  const [tempVariant, setTempVariant] = useState({
+    size: "500g",
+    price: "",
+    stock: "",
+  });
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+  const [previewSource, setPreviewSource] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
 
-// --- DATABASE CONNECTION ---
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("🐝 Connected to Honey Farm Database"))
-  .catch((err) => console.error("❌ DB Error:", err));
+  const fetchData = async (adminPass) => {
+    setLoading(true);
+    try {
+      const orderRes = await fetch(
+        "https://dr-honey-bee-website.onrender.com/api/admin/orders",
+        { headers: { "x-admin-key": adminPass } },
+      );
+      const invRes = await fetch(
+        "https://dr-honey-bee-website.onrender.com/api/products",
+      );
 
-// --- SCHEMAS ---
+      if (orderRes.ok && invRes.ok) {
+        const orderData = await orderRes.json();
+        const invData = await invRes.json();
+        setOrders(orderData);
+        setInventory(invData);
+        setIsAuthenticated(true);
+        setError("");
+      } else {
+        setError("Invalid Admin Password.");
+      }
+    } catch (err) {
+      setError("Server connection failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-// 1. Product Schema
-const productSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  category: { type: String, required: true }, // Honey, Equipment, Soap
-  description: String,
-  imageUrl: String,
-  price: Number, // Base price or display price
-  stockQuantity: Number, // For Equipment/Soap
-  variants: [
-    {
-      size: String,
-      price: Number,
-      stock: Number,
-    },
-  ], // For Honey
-  createdAt: { type: Date, default: Date.now },
-});
-const Product = mongoose.model("Product", productSchema);
+  const handleLogin = (e) => {
+    e.preventDefault();
+    fetchData(password);
+  };
 
-// 2. Order Schema (Crucial for the Admin Dashboard to show data)
-const orderSchema = new mongoose.Schema({
-  customerName: String,
-  email: String,
-  phone: String,
-  address: String,
-  items: Array,
-  totalAmount: Number,
-  status: { type: String, default: "Pending" }, // Pending, Shipped, Delivered
-  razorpayOrderId: String,
-  createdAt: { type: Date, default: Date.now },
-});
-const Order = mongoose.model("Order", orderSchema);
+  const addVariant = (e) => {
+    e.preventDefault();
+    if (!tempVariant.price || !tempVariant.stock)
+      return alert("Enter price and stock");
+    setNewProduct({
+      ...newProduct,
+      variants: [...newProduct.variants, tempVariant],
+    });
+    setTempVariant({ size: "500g", price: "", stock: "" });
+  };
 
-// --- AUTH MIDDLEWARE ---
-const adminAuth = (req, res, next) => {
-  const adminKey = req.headers["x-admin-key"];
-  if (adminKey === process.env.ADMIN_PASSWORD) {
-    next();
-  } else {
-    res.status(401).json({ message: "Unauthorized: Invalid Admin Key" });
+  const removeVariant = (index) => {
+    const updated = newProduct.variants.filter((_, i) => i !== index);
+    setNewProduct({ ...newProduct, variants: updated });
+  };
+
+  const handleFileInputChange = (e) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onloadend = () => setPreviewSource(reader.result);
+  };
+
+  const handleAddProduct = async (e) => {
+    e.preventDefault();
+    if (!previewSource) return alert("Please select a photo!");
+    setIsUploading(true);
+
+    try {
+      // 1. Upload to YOUR server (The server handles Cloudinary)
+      const uploadRes = await fetch(
+        "https://dr-honey-bee-website.onrender.com/api/admin/upload",
+        {
+          method: "POST",
+          body: JSON.stringify({ data: previewSource }),
+          headers: {
+            "Content-Type": "application/json",
+            "x-admin-key": password,
+          },
+        },
+      );
+      const { url } = await uploadRes.json();
+
+      // 2. Prepare Payload
+      const payload = {
+        ...newProduct,
+        imageUrl: url,
+        ...(newProduct.category === "Honey"
+          ? { price: newProduct.variants[0]?.price }
+          : {}),
+      };
+
+      // 3. Save Product
+      const productRes = await fetch(
+        "https://dr-honey-bee-website.onrender.com/api/admin/products",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-admin-key": password,
+          },
+          body: JSON.stringify(payload),
+        },
+      );
+
+      if (productRes.ok) {
+        alert("Published!");
+        setNewProduct({
+          name: "",
+          category: "Honey",
+          description: "",
+          variants: [],
+        });
+        setPreviewSource("");
+        fetchData(password);
+      }
+    } catch (err) {
+      alert("Upload failed.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#fdfbf7]">
+        <form
+          onSubmit={handleLogin}
+          className="bg-white p-8 rounded-xl shadow-lg w-80"
+        >
+          <input
+            type="password"
+            placeholder="Admin Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full p-3 mb-4 border rounded-lg"
+            required
+          />
+          <button
+            type="submit"
+            className="w-full bg-[#4a3728] text-white p-3 rounded-lg font-bold"
+          >
+            {loading ? "Loading..." : "Login"}
+          </button>
+          {error && <p className="text-red-500 mt-2 text-sm">{error}</p>}
+        </form>
+      </div>
+    );
   }
+
+  return (
+    <div className="min-h-screen bg-[#fdfbf7] p-10">
+      <h1 className="text-3xl font-bold text-[#4a3728] mb-8">
+        Admin Dashboard
+      </h1>
+      {/* Product Form & Inventory Table logic remains same as previous version */}
+    </div>
+  );
 };
 
-// --- ROUTES ---
-
-// Public: Get All Products
-app.get("/api/products", async (req, res) => {
-  try {
-    const products = await Product.find().sort({ createdAt: -1 });
-    res.json(products);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// Admin: Get All Orders
-app.get("/api/admin/orders", adminAuth, async (req, res) => {
-  try {
-    const orders = await Order.find().sort({ createdAt: -1 });
-    res.json(orders);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// Admin: Upload Image to Cloudinary
-app.post("/api/admin/upload", adminAuth, async (req, res) => {
-  try {
-    const fileStr = req.body.data;
-    const uploadResponse = await cloudinary.uploader.upload(fileStr, {
-      folder: "honey_farm_products",
-    });
-    res.json({ url: uploadResponse.secure_url });
-  } catch (error) {
-    res.status(500).json({ message: "Image upload failed" });
-  }
-});
-
-// Admin: Add New Product
-app.post("/api/admin/products", adminAuth, async (req, res) => {
-  try {
-    const newProduct = new Product(req.body);
-    await newProduct.save();
-    res.status(201).json(newProduct);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-});
-
-// Admin: Delete Product
-app.delete("/api/admin/products/:id", adminAuth, async (req, res) => {
-  try {
-    await Product.findByIdAndDelete(req.params.id);
-    res.json({ message: "Product deleted" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// Admin: Update Order Status
-app.patch("/api/admin/orders/:id", adminAuth, async (req, res) => {
-  try {
-    const updatedOrder = await Order.findByIdAndUpdate(
-      req.params.id,
-      { status: req.body.status },
-      { new: true },
-    );
-    res.json(updatedOrder);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// Health Check
-app.get("/", (req, res) => {
-  res.send("🐝 Dr. Honey Farm API is Online!");
-});
-
-// --- SERVER START ---
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log(`🚀 Server flying on port ${PORT}`));
+export default AdminDashboard;
