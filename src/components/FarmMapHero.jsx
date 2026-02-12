@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Play } from "lucide-react";
+import { Play, X, Map as MapIcon, Video } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
-// --- 1. HOTSPOT COMPONENT (Handles Both Views) ---
+// --- 1. HOTSPOT COMPONENT ---
 const FarmHotspot = ({ label, top, left, right, videoSrc, isForcedOpen }) => {
   const [isHovered, setIsHovered] = useState(false);
   const videoRef = useRef(null);
@@ -26,57 +27,42 @@ const FarmHotspot = ({ label, top, left, right, videoSrc, isForcedOpen }) => {
       style={{ top, left, right }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      onClick={() => setIsHovered(!isHovered)}
     >
-      {/* VIDEO POPUP SIZE:
-         Mobile: w-32 h-20
-         Desktop: md:w-48 md:h-32 
-      */}
-      <div
-        className={`absolute bottom-full mb-2 md:mb-4 w-32 h-20 md:w-48 md:h-32 bg-[#FDF8E8] border-2 md:border-4 border-white shadow-xl rounded-lg overflow-hidden transition-all duration-500 ease-out origin-bottom z-30 ${
-          isOpen
-            ? "opacity-100 scale-100 translate-y-0"
-            : "opacity-0 scale-90 translate-y-4 pointer-events-none"
-        }`}
-      >
-        <video
-          ref={videoRef}
-          src={videoSrc}
-          className="w-full h-full object-cover"
-          muted
-          loop
-          playsInline
-        />
-      </div>
+      {/* VIDEO POPUP */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 10 }}
+            className="absolute bottom-full mb-4 w-40 h-28 md:w-64 md:h-40 bg-[#FDF8E8] border-2 md:border-4 border-white shadow-2xl rounded-xl overflow-hidden z-30"
+          >
+            <video
+              ref={videoRef}
+              src={videoSrc}
+              className="w-full h-full object-cover"
+              muted
+              loop
+              playsInline
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* LABEL STYLE:
-         Mobile: Smaller font (text-[8px]), thinner padding
-         Desktop: Larger font (md:text-[10px]), more padding
-      */}
+      {/* LABEL */}
       <div
-        className={`bg-[#FDF8E8] border border-[#5C4D3C] px-2 py-0.5 md:px-3 md:py-1 rounded-md shadow-md mb-1 md:mb-2 transition-transform duration-300 ${
-          isOpen
-            ? "-translate-y-1 md:-translate-y-2 scale-105"
-            : "group-hover:-translate-y-1"
-        }`}
+        className={`bg-[#FDF8E8] border border-[#5C4D3C] px-3 py-1 rounded-md shadow-md mb-2 transition-all ${isOpen ? "-translate-y-2 bg-amber-50" : ""}`}
       >
-        <span className="font-montserrat text-[8px] md:text-[10px] font-bold text-[#3E2F20] whitespace-nowrap uppercase tracking-wider flex items-center gap-1">
+        <span className="font-sans text-[10px] md:text-xs font-bold text-[#3E2F20] uppercase tracking-wider">
           {label}
         </span>
       </div>
 
-      {/* PIN BUTTON SIZE:
-         Mobile: w-6 h-6
-         Desktop: md:w-8 md:h-8
-      */}
-      <div className="relative flex items-center justify-center w-6 h-6 md:w-8 md:h-8">
+      {/* PIN PULSE */}
+      <div className="relative flex items-center justify-center w-8 h-8">
         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75"></span>
-        <span className="relative inline-flex rounded-full h-6 w-6 md:h-8 md:w-8 bg-white border-2 border-[#D98829] shadow-md items-center justify-center transition-colors group-hover:bg-[#FDF8E8]">
-          <Play
-            size={10}
-            fill="#3E2F20"
-            className="text-[#3E2F20] ml-0.5 md:w-3 md:h-3"
-          />
+        <span className="relative inline-flex rounded-full h-8 w-8 bg-white border-2 border-[#D98829] shadow-md items-center justify-center">
+          <Play size={12} fill="#3E2F20" className="text-[#3E2F20] ml-0.5" />
         </span>
       </div>
     </div>
@@ -85,79 +71,135 @@ const FarmHotspot = ({ label, top, left, right, videoSrc, isForcedOpen }) => {
 
 // --- 2. MAIN HERO COMPONENT ---
 const FarmMapHero = () => {
+  const [view, setView] = useState("video"); // 'video' or 'map'
   const [activeDemo, setActiveDemo] = useState(null);
 
-  // Auto-play the demo for 5 seconds on load
+  // Auto-switch from Video to Map after 50 seconds or manual skip
   useEffect(() => {
-    const startTimer = setTimeout(() => setActiveDemo("apiary"), 1500);
-    const endTimer = setTimeout(() => setActiveDemo(null), 5000);
-    return () => {
-      clearTimeout(startTimer);
-      clearTimeout(endTimer);
-    };
-  }, []);
+    if (view === "video") {
+      const timer = setTimeout(() => setView("map"), 50000); // 50 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [view]);
 
   return (
-    <div className="bg-[#FDFCF8] pb-6">
-      {/* TITLE SECTION */}
-      <div className="text-center pt-6 pb-4 px-4">
-        {/* TITLE SIZE:
-           Mobile: text-2xl
-           Tablet: sm:text-3xl
-           Desktop: md:text-4xl
-        */}
-        <h1 className="font-merriweather text-2xl sm:text-3xl md:text-4xl font-black text-[#3E2F20] tracking-tight mb-3">
+    <div className="bg-[#FDFCF8] min-h-screen font-serif">
+      {/* HEADER SECTION */}
+      <div className="text-center pt-10 pb-6 px-4">
+        <motion.h1
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="text-3xl md:text-5xl font-black text-[#3E2F20] tracking-tight mb-4"
+        >
           DR. HONEY BEE FARM
-        </h1>
+        </motion.h1>
 
-        {/* SUBTITLE LAYOUT:
-           Mobile: flex-col (Stacked vertically)
-           Desktop: sm:flex-row (Side by side)
-        */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-          <p className="font-montserrat text-[10px] md:text-xs font-bold text-[#8C7A63] uppercase tracking-[0.2em]">
-            EST. 2024 • PALANI
-          </p>
-
-          {/* Divider Dot (Hidden on Mobile) */}
-          <div className="hidden sm:block w-1 h-1 bg-[#EAD2AC] rounded-full"></div>
-
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-[#EAD2AC]/30 px-3 py-1 rounded-full">
-            <span className="w-1.5 h-1.5 bg-amber-600 rounded-full animate-pulse"></span>
-            <span className="text-[9px] font-bold text-[#5C4D3C] uppercase tracking-wider">
-              Interactive Map
-            </span>
-          </div>
+        <div className="flex items-center justify-center gap-4 text-[#8C7A63] font-sans text-xs font-bold tracking-[0.2em] uppercase">
+          <p>Est. 2024</p>
+          <div className="w-1.5 h-1.5 bg-amber-400 rounded-full" />
+          <p>Palani, Tamil Nadu</p>
         </div>
       </div>
 
-      {/* MAP IMAGE CONTAINER */}
-      <main className="relative w-full z-0 px-2 md:px-4">
-        <div className="w-full max-w-[1400px] mx-auto relative rounded-xl md:rounded-3xl overflow-hidden shadow-xl border-2 md:border-4 border-white group">
-          <img
-            src="/hero1.png"
-            alt="Farm Landscape"
-            className="w-full h-auto object-cover"
-          />
+      {/* CONTENT TOGGLE CONTAINER */}
+      <div className="max-w-[1200px] mx-auto px-4 relative">
+        <AnimatePresence mode="wait">
+          {view === "video" ? (
+            /* --- FULL SCREEN INTRO VIDEO --- */
+            <motion.div
+              key="intro-video"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="relative aspect-video rounded-3xl overflow-hidden shadow-2xl bg-black group"
+            >
+              <video
+                autoPlay
+                muted
+                onEnded={() => setView("map")}
+                className="w-full h-full object-cover opacity-80"
+              >
+                <source src="/farm-intro-50s.mp4" type="video/mp4" />
+              </video>
 
-          {/* HOTSPOTS (Positioned by %) */}
-          <FarmHotspot
-            label="APIARY"
-            top="30%"
-            left="20%"
-            videoSrc="/beeflower.mp4"
-            isForcedOpen={activeDemo === "apiary"}
-          />
-          <FarmHotspot
-            label="WORKSHOP"
-            top="45%"
-            right="20%"
-            videoSrc="/honeyextractor.mp4"
-            isForcedOpen={false}
-          />
-        </div>
-      </main>
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-6 text-center">
+                <h2 className="text-2xl md:text-4xl font-bold mb-4">
+                  A Glimpse of Our Pure World
+                </h2>
+                <button
+                  onClick={() => setView("map")}
+                  className="flex items-center gap-2 bg-white/20 hover:bg-white/40 backdrop-blur-md px-6 py-2 rounded-full border border-white/50 transition-all uppercase text-sm font-bold tracking-widest"
+                >
+                  Explore Interactive Map <MapIcon size={16} />
+                </button>
+              </div>
+
+              {/* Countdown Progress Bar */}
+              <motion.div
+                initial={{ width: "0%" }}
+                animate={{ width: "100%" }}
+                transition={{ duration: 50, ease: "linear" }}
+                className="absolute bottom-0 left-0 h-1.5 bg-amber-500"
+              />
+            </motion.div>
+          ) : (
+            /* --- INTERACTIVE FARM MAP --- */
+            <motion.div
+              key="interactive-map"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white"
+            >
+              <img
+                src="/hero1.png"
+                alt="Illustrated Farm Map"
+                className="w-full h-auto object-cover"
+              />
+
+              {/* The Hotspots */}
+              <FarmHotspot
+                label="The Apiary"
+                top="25%"
+                left="15%"
+                videoSrc="/beeflower.mp4"
+              />
+
+              <FarmHotspot
+                label="Extraction Unit"
+                top="55%"
+                right="18%"
+                videoSrc="/honeyextractor.mp4"
+              />
+
+              <FarmHotspot
+                label="Organic Fields"
+                top="40%"
+                left="45%"
+                videoSrc="/farm-fields.mp4"
+              />
+
+              {/* View Control Switcher */}
+              <div className="absolute bottom-6 left-6 flex gap-2">
+                <button
+                  onClick={() => setView("video")}
+                  className="bg-white/90 p-3 rounded-full shadow-lg text-[#3E2F20] hover:bg-amber-50 transition-colors"
+                  title="Watch Video Again"
+                >
+                  <Video size={20} />
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* FOOTER LEGEND */}
+      <div className="text-center mt-10">
+        <p className="text-[#8C7A63] text-sm italic">
+          "Hover over the hotspots to see the magic of Dr. Honey Bee Farm in
+          action"
+        </p>
+      </div>
     </div>
   );
 };
