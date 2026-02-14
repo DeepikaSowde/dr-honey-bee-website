@@ -88,7 +88,7 @@ const FarmMapHero = () => {
   // Auto-switch from Video to Map after 50 seconds
   useEffect(() => {
     if (view === "video") {
-      const timer = setTimeout(() => setView("map"), 50000);
+      const timer = setTimeout(() => setView("map"), 300000);
       return () => clearTimeout(timer);
     }
   }, [view]);
