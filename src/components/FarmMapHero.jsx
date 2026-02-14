@@ -1,6 +1,15 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Play, X, Map as MapIcon, Video } from "lucide-react";
+import { Play, Map as MapIcon, Video } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+
+/** * NOTE: Ensure these files exist in your 'src/assets' folder.
+ * If they are in your 'public' folder, you can keep the string paths
+ * like "/beeflower.mp4", but imports are safer for builds.
+ */
+// import introVid from "./assets/Video_Creation_From_Images.mp4";
+// import beeFlowerVid from "./assets/beeflower.mp4";
+// import extractorVid from "./assets/honeyextractor.mp4";
+// import fieldsVid from "./assets/farm-fields.mp4";
 
 // --- 1. HOTSPOT COMPONENT ---
 const FarmHotspot = ({ label, top, left, right, videoSrc, isForcedOpen }) => {
@@ -24,9 +33,10 @@ const FarmHotspot = ({ label, top, left, right, videoSrc, isForcedOpen }) => {
   return (
     <div
       className="absolute z-20 flex flex-col items-center cursor-pointer group"
-      style={{ top, left, right }}
+      style={{ top, left: left || "auto", right: right || "auto" }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={() => setIsHovered(!isHovered)} // Better mobile support
     >
       {/* VIDEO POPUP */}
       <AnimatePresence>
@@ -35,7 +45,7 @@ const FarmHotspot = ({ label, top, left, right, videoSrc, isForcedOpen }) => {
             initial={{ opacity: 0, scale: 0.9, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 10 }}
-            className="absolute bottom-full mb-4 w-40 h-28 md:w-64 md:h-40 bg-[#FDF8E8] border-2 md:border-4 border-white shadow-2xl rounded-xl overflow-hidden z-30"
+            className="absolute bottom-full mb-4 w-40 h-28 md:w-64 md:h-40 bg-[#FDF8E8] border-2 md:border-4 border-white shadow-2xl rounded-xl overflow-hidden z-30 -translate-x-1/2 left-1/2"
           >
             <video
               ref={videoRef}
@@ -51,9 +61,11 @@ const FarmHotspot = ({ label, top, left, right, videoSrc, isForcedOpen }) => {
 
       {/* LABEL */}
       <div
-        className={`bg-[#FDF8E8] border border-[#5C4D3C] px-3 py-1 rounded-md shadow-md mb-2 transition-all ${isOpen ? "-translate-y-2 bg-amber-50" : ""}`}
+        className={`bg-[#FDF8E8] border border-[#5C4D3C] px-3 py-1 rounded-md shadow-md mb-2 transition-all ${
+          isOpen ? "-translate-y-2 bg-amber-50" : ""
+        }`}
       >
-        <span className="font-sans text-[10px] md:text-xs font-bold text-[#3E2F20] uppercase tracking-wider">
+        <span className="font-sans text-[10px] md:text-xs font-bold text-[#3E2F20] uppercase tracking-wider whitespace-nowrap">
           {label}
         </span>
       </div>
@@ -72,18 +84,17 @@ const FarmHotspot = ({ label, top, left, right, videoSrc, isForcedOpen }) => {
 // --- 2. MAIN HERO COMPONENT ---
 const FarmMapHero = () => {
   const [view, setView] = useState("video"); // 'video' or 'map'
-  const [activeDemo, setActiveDemo] = useState(null);
 
-  // Auto-switch from Video to Map after 50 seconds or manual skip
+  // Auto-switch from Video to Map after 50 seconds
   useEffect(() => {
     if (view === "video") {
-      const timer = setTimeout(() => setView("map"), 50000); // 50 seconds
+      const timer = setTimeout(() => setView("map"), 50000);
       return () => clearTimeout(timer);
     }
   }, [view]);
 
   return (
-    <div className="bg-[#FDFCF8] min-h-screen font-serif">
+    <div className="bg-[#FDFCF8] min-h-screen font-serif pb-20">
       {/* HEADER SECTION */}
       <div className="text-center pt-10 pb-6 px-4">
         <motion.h1
@@ -116,16 +127,18 @@ const FarmMapHero = () => {
               <video
                 autoPlay
                 muted
+                playsInline
                 onEnded={() => setView("map")}
                 className="w-full h-full object-cover opacity-80"
               >
+                {/* Ensure this path is exactly correct in your public folder */}
                 <source
                   src="/Video_Creation_From_Images.mp4"
                   type="video/mp4"
                 />
               </video>
 
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-6 text-center">
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-6 text-center bg-black/20">
                 <h2 className="text-2xl md:text-4xl font-bold mb-4">
                   A Glimpse of Our Pure World
                 </h2>
