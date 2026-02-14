@@ -1,12 +1,11 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Play, Camera } from "lucide-react";
+import { X, Camera, ChevronRight } from "lucide-react";
 
 const GalleryPage = () => {
   const [selectedMedia, setSelectedMedia] = useState(null);
   const [filter, setFilter] = useState("All");
 
-  // Mapped based on your real files in public/Gallery
   const galleryData = [
     {
       id: 1,
@@ -80,7 +79,6 @@ const GalleryPage = () => {
     },
   ];
 
-  // Updated categories to match your new real data
   const categories = ["All", "Bees", "Process", "Training"];
 
   const filteredMedia =
@@ -89,37 +87,36 @@ const GalleryPage = () => {
       : galleryData.filter((item) => item.category === filter);
 
   return (
-    <div className="bg-[#FDFCF8] min-h-screen pt-12 pb-24 px-6 font-sans">
-      {/* --- HEADER --- */}
-      <header className="max-w-7xl mx-auto text-center mb-12">
+    <div className="bg-[#FDFCF8] min-h-screen pt-8 pb-20 px-4 md:px-6 font-sans">
+      {/* --- MOBILE HEADER --- */}
+      <header className="max-w-7xl mx-auto text-center mb-8">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
           className="flex flex-col items-center"
         >
-          <div className="bg-amber-100 p-3 rounded-full mb-4 text-amber-700 shadow-sm">
-            <Camera size={30} />
+          <div className="bg-amber-100 p-2.5 rounded-full mb-3 text-amber-700 shadow-sm">
+            <Camera size={24} />
           </div>
-          <h1 className="text-4xl md:text-6xl font-black text-[#3E2F20] tracking-tight uppercase">
+          <h1 className="text-3xl md:text-6xl font-black text-[#3E2F20] tracking-tight uppercase">
             Our Farm Story
           </h1>
-          <p className="text-[#8C7A63] mt-4 max-w-xl font-medium italic">
-            "Direct from Palani—see our bees, our training programs, and our
-            100% natural honey."
+          <p className="text-[#8C7A63] mt-2 text-sm md:text-lg max-w-xl font-medium italic px-4">
+            "Direct from Palani—see our bees, training, and 100% natural honey."
           </p>
         </motion.div>
       </header>
 
-      {/* --- CATEGORY FILTERS --- */}
-      <div className="flex flex-wrap justify-center gap-3 mb-12">
+      {/* --- TOUCH-OPTIMIZED FILTERS (Horizontal Scroll on Mobile) --- */}
+      <div className="flex overflow-x-auto no-scrollbar md:justify-center gap-3 mb-8 pb-2 -mx-4 px-4">
         {categories.map((cat) => (
           <button
             key={cat}
             onClick={() => setFilter(cat)}
-            className={`px-6 py-2 rounded-full text-xs font-bold tracking-widest transition-all duration-300 ${
+            className={`whitespace-nowrap px-6 py-2.5 rounded-full text-[11px] font-bold tracking-widest transition-all shrink-0 ${
               filter === cat
-                ? "bg-[#3E2F20] text-white shadow-xl scale-105"
-                : "bg-white text-[#5C4D3C] border border-amber-100 hover:border-amber-400"
+                ? "bg-[#3E2F20] text-white shadow-md"
+                : "bg-white text-[#5C4D3C] border border-amber-100"
             }`}
           >
             {cat.toUpperCase()}
@@ -127,72 +124,76 @@ const GalleryPage = () => {
         ))}
       </div>
 
-      {/* --- MASONRY GRID --- */}
-      <div className="max-w-7xl mx-auto columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
+      {/* --- MASONRY GRID (1 Column Mobile, 2 Tablet, 3 Desktop) --- */}
+      <div className="max-w-7xl mx-auto columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
         <AnimatePresence mode="popLayout">
           {filteredMedia.map((item) => (
             <motion.div
               key={item.id}
               layout
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.4 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               onClick={() => setSelectedMedia(item)}
-              className="relative break-inside-avoid rounded-3xl overflow-hidden cursor-zoom-in group shadow-md hover:shadow-2xl transition-all duration-500 bg-white border border-amber-50"
+              className="relative break-inside-avoid rounded-2xl overflow-hidden active:scale-95 transition-transform bg-white border border-amber-50 shadow-sm"
             >
               <img
                 src={item.url}
                 alt={item.title}
-                className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-700"
+                className="w-full h-auto object-cover"
               />
 
-              <div className="absolute inset-0 bg-gradient-to-t from-[#3E2F20]/90 via-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
-                <span className="text-amber-400 text-[10px] font-bold tracking-[0.2em] uppercase mb-1">
+              {/* Mobile Info Tag (Visible without hover for accessibility) */}
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 p-4">
+                <span className="text-amber-400 text-[9px] font-bold tracking-widest uppercase">
                   {item.category}
                 </span>
-                <p className="text-white font-bold tracking-wider text-sm">
-                  {item.title}
-                </p>
+                <p className="text-white font-bold text-xs">{item.title}</p>
               </div>
             </motion.div>
           ))}
         </AnimatePresence>
       </div>
 
-      {/* --- LIGHTBOX MODAL --- */}
+      {/* --- MOBILE-FIRST LIGHTBOX --- */}
       <AnimatePresence>
         {selectedMedia && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-[#3E2F20]/95 backdrop-blur-xl flex items-center justify-center p-4"
+            className="fixed inset-0 z-[100] bg-[#3E2F20] flex flex-col items-center justify-center p-4"
             onClick={() => setSelectedMedia(null)}
           >
-            <button className="absolute top-6 right-6 text-white hover:text-amber-400 p-2 transition-transform hover:rotate-90">
-              <X size={32} />
+            {/* Close Button Top Right */}
+            <button className="absolute top-6 right-6 text-white p-2">
+              <X size={28} />
             </button>
 
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="max-w-4xl w-full flex flex-col items-center"
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              className="w-full flex flex-col items-center"
               onClick={(e) => e.stopPropagation()}
             >
               <img
                 src={selectedMedia.url}
-                className="max-w-full max-h-[75vh] rounded-2xl shadow-2xl border-4 border-white/10"
+                className="max-w-full max-h-[70vh] rounded-lg shadow-xl"
                 alt={selectedMedia.title}
               />
-              <div className="mt-6 text-center">
-                <span className="text-amber-400 text-xs font-bold tracking-[0.4em] uppercase">
+              <div className="mt-6 text-center px-6">
+                <span className="text-amber-400 text-[10px] font-bold tracking-widest uppercase">
                   {selectedMedia.category}
                 </span>
-                <h2 className="text-white text-2xl font-black mt-2 tracking-tight">
+                <h2 className="text-white text-xl font-bold mt-1">
                   {selectedMedia.title}
                 </h2>
+                <button
+                  onClick={() => setSelectedMedia(null)}
+                  className="mt-8 text-white/50 text-[10px] uppercase tracking-widest flex items-center gap-1 mx-auto"
+                >
+                  Swipe or Tap to close
+                </button>
               </div>
             </motion.div>
           </motion.div>
