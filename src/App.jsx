@@ -34,7 +34,8 @@ import ShippingPolicy from "./pages/ShippingPolicy";
 import ScrollToTop from "./pages/ScrollToTop";
 import CheckoutPage from "./pages/CheckoutPage";
 import AdminDashboard from "./pages/AdminDashboard";
-import OrderSuccessPage from "./pages/OrderSuccessPage"; // Import the file
+import OrderSuccessPage from "./pages/OrderSuccessPage";
+import GalleryPage from "./pages/GalleryPage"; // Import the file
 function App() {
   return (
     <CartProvider>
@@ -73,6 +74,7 @@ function App() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/admin-login-secret" element={<AdminDashboard />} />
+          <Route path="/gallery" element={<GalleryPage />} />
           {/* ================= NEW: LEGAL PAGES (Required for Razorpay) ================= */}
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/refund-policy" element={<RefundPolicy />} />
