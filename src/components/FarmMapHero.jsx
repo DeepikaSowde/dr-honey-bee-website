@@ -132,10 +132,7 @@ const FarmMapHero = () => {
                 className="w-full h-full object-cover opacity-80"
               >
                 {/* Ensure this path is exactly correct in your public folder */}
-                <source
-                  src="/Video_Creation_From_Images.mp4"
-                  type="video/mp4"
-                />
+                <source src="/herovideo.mp4" type="video/mp4" />
               </video>
 
               <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-6 text-center bg-black/20">
