@@ -135,18 +135,6 @@ const FarmMapHero = () => {
                 <source src="/herovideo.mp4" type="video/mp4" />
               </video>
 
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-6 text-center bg-black/20">
-                <h2 className="text-2xl md:text-4xl font-bold mb-4">
-                  A Glimpse of Our Pure World
-                </h2>
-                <button
-                  onClick={() => setView("map")}
-                  className="flex items-center gap-2 bg-white/20 hover:bg-white/40 backdrop-blur-md px-6 py-2 rounded-full border border-white/50 transition-all uppercase text-sm font-bold tracking-widest"
-                >
-                  Explore Interactive Map <MapIcon size={16} />
-                </button>
-              </div>
-
               {/* Countdown Progress Bar */}
               <motion.div
                 initial={{ width: "0%" }}
