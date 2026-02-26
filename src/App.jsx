@@ -16,6 +16,7 @@ import Testimonials from "./components/Testimonials";
 import TrainingGallery from "./components/TrainingGallery";
 import TrainingSection from "./components/TrainingSection";
 import BestSellers from "./components/BestSellers";
+import HiveAssistant from "./components/HiveAssistant";
 
 // --- 4. IMPORT PAGES ---
 import ProductShowcase from "./pages/ProductShowcase";
@@ -84,6 +85,7 @@ function App() {
 
         {/* FOOTER: Now shows on every page (Home, Shop, Policies, etc.) */}
         <FarmFooter />
+        <HiveAssistant />
       </BrowserRouter>
     </CartProvider>
   );
