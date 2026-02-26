@@ -34,7 +34,7 @@ export default function HiveAssistant() {
       // ⚠️ IMPORTANT: Replace this URL with your actual live Render URL!
       // Example: 'https://hive-backend-xyz.onrender.com/api/chat'
       const response = await fetch(
-        "https://dr-honey-bee-website.onrender.com/api/chat",
+        "https://hive-ai-agent.onrender.com/api/chat",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
