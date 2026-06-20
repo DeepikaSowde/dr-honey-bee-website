@@ -115,35 +115,7 @@ const FarmMapHero = () => {
       {/* CONTENT TOGGLE CONTAINER */}
       <div className="max-w-[1200px] mx-auto px-4 relative">
         <AnimatePresence mode="wait">
-          {view === "video" ? (
-            /* --- FULL SCREEN INTRO VIDEO --- */
-            <motion.div
-              key="intro-video"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="relative aspect-video rounded-3xl overflow-hidden shadow-2xl bg-black group"
-            >
-              <video
-                autoPlay
-                muted
-                playsInline
-                onEnded={() => setView("map")}
-                className="w-full h-full object-cover opacity-80"
-              >
-                {/* Ensure this path is exactly correct in your public folder */}
-                <source src="/herovideo.mp4" type="video/mp4" />
-              </video>
-
-              {/* Countdown Progress Bar */}
-              <motion.div
-                initial={{ width: "0%" }}
-                animate={{ width: "100%" }}
-                transition={{ duration: 50, ease: "linear" }}
-                className="absolute bottom-0 left-0 h-1.5 bg-amber-500"
-              />
-            </motion.div>
-          ) : (
+         (
             /* --- INTERACTIVE FARM MAP --- */
             <motion.div
               key="interactive-map"
@@ -190,7 +162,7 @@ const FarmMapHero = () => {
                 </button>
               </div>
             </motion.div>
-          )}
+          )
         </AnimatePresence>
       </div>
 

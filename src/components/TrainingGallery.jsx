@@ -9,7 +9,7 @@ const camps = [
     date: "Jan 10, 2026",
     attendees: 45,
     image:
-      "https://images.unsplash.com/photo-1625246333195-5840507c8879?auto=format&fit=crop&q=80",
+      "/Gallery/Training student pic.jpeg",
     status: "Completed",
     highlight: "45 Farmers trained in Queen Rearing techniques.",
   },
@@ -20,7 +20,7 @@ const camps = [
     date: "Jan 25, 2026",
     attendees: 100,
     image:
-      "https://images.unsplash.com/photo-1595248547432-8df7d9d69042?auto=format&fit=crop&q=80",
+      "/Gallery/Training Pic.jpeg",
     status: "Upcoming",
     highlight: "Open Registration for Basic Beekeeping.",
   },
@@ -31,7 +31,7 @@ const camps = [
     date: "Feb 02, 2026",
     attendees: 30,
     image:
-      "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80",
+      "/Gallery/training img 3.jpeg",
     status: "Filling Fast",
     highlight: "Advanced Commercial Honey Extraction.",
   },
@@ -42,7 +42,7 @@ const camps = [
     date: "Feb 15, 2026",
     attendees: 0,
     image:
-      "https://images.unsplash.com/photo-1605000797499-95a51c5269ae?auto=format&fit=crop&q=80",
+      "/Gallery/training.jpeg",
     status: "Open",
     highlight: "Coffee Estate Bee Integration Workshop.",
   },

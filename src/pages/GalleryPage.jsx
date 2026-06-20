@@ -277,15 +277,17 @@ const GalleryPage = () => {
       <div className="max-w-7xl mx-auto columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
         <AnimatePresence mode="popLayout">
           {filteredMedia.map((item) => (
-            <motion.div
-              key={item.id}
-              layout
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSelectedMedia(item)}
-              className="relative break-inside-avoid rounded-2xl overflow-hidden active:scale-95 transition-transform bg-white border border-amber-50 shadow-sm"
-            >
+        <motion.div
+  key={item.id}
+  layout
+  initial={{ opacity: 0 }}
+  animate={{ opacity: 1 }}
+  exit={{ opacity: 0 }}
+  // Etha mathunga:
+  whileHover={{ scale: 1.03, transition: { duration: 0.2 } }} 
+  onClick={() => setSelectedMedia(item)}
+  className="relative break-inside-avoid rounded-2xl overflow-hidden active:scale-95 transition-transform bg-white border border-amber-50 shadow-sm cursor-pointer"
+>
 {item.type === "image" ? (
   <img
     src={item.url}
